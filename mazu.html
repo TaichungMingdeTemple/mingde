@@ -296,15 +296,15 @@
     </header>
 
     <!-- 全域懸浮控制台 & 原地彈出設定卡片 (支援手機觸控與電腦滑鼠自由拖曳) -->
-    <div id="floating-control-container" class="no-print fixed bottom-5 right-4 z-50 flex flex-col items-end space-y-2.5 touch-none select-none">
+    <div id="floating-control-container" class="no-print fixed bottom-5 right-4 z-50 flex flex-col items-end space-y-2.5 touch-none select-none max-w-[calc(100vw-1rem)]">
 
         <!-- 懸浮語音與閱讀設定面板 -->
-        <div id="tts-settings-panel" class="hidden w-[calc(100vw-2rem)] max-w-sm bg-red-950/95 backdrop-blur-md text-amber-100 rounded-2xl shadow-2xl border-2 border-amber-500/70 p-4 space-y-3 text-xs md:text-sm transition-all touch-auto">
-            <div class="flex items-center justify-between border-b border-amber-800/70 pb-2">
+        <div id="tts-settings-panel" class="hidden w-[calc(100vw-2rem)] max-w-sm max-h-[75vh] overflow-y-auto bg-red-950/95 backdrop-blur-md text-amber-100 rounded-2xl shadow-2xl border-2 border-amber-500/70 p-4 space-y-3 text-xs md:text-sm transition-all touch-auto">
+            <div id="tts-settings-header" class="flex items-center justify-between border-b border-amber-800/70 pb-2 cursor-grab active:cursor-grabbing select-none" title="按住標題列也可拖曳移動位置">
                 <span class="font-bold text-amber-400 flex items-center space-x-1.5">
                     <span>⚙️</span><span>誦經語音與循環設定</span>
                 </span>
-                <button onclick="toggleTtsSettings()" class="text-amber-300 hover:text-white bg-red-900/90 px-2.5 py-1 rounded-lg font-bold">✕ 關閉</button>
+                <button type="button" onclick="toggleTtsSettings()" class="text-amber-300 hover:text-white bg-red-900/90 px-2.5 py-1 rounded-lg font-bold shrink-0">✕ 關閉</button>
             </div>
 
             <!-- 系統語音選擇 -->
@@ -922,87 +922,81 @@
         </div>
     </div>
 
-    <!-- 重設計次確認彈窗 (取代 browser confirm) -->
+    <!-- 重置誦經計次確認彈窗 -->
     <div id="reset-counter-modal" class="no-print hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeResetCounterModal()">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 space-y-4 text-center">
-            <div class="text-3xl">📿</div>
-            <h3 class="serif-font text-xl font-black text-red-950">重設誦經計次紀錄？</h3>
-            <p class="text-xs text-stone-600 leading-relaxed">您可以選擇僅歸零「今日已誦」遍數，或將「累計總數」一併歸零重新計算。</p>
-            <div class="flex flex-col gap-2 pt-2">
-                <button onclick="resetChantCount('today')" class="w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl text-sm transition">
-                    僅歸零「今日已誦」
+            <h3 class="serif-font text-xl font-black text-red-950">重設誦經計次紀錄</h3>
+            <p class="text-xs text-stone-600 leading-relaxed">請選擇您要重設的計數範圍，此操作無法復原：</p>
+            <div class="flex flex-col gap-2 pt-1">
+                <button onclick="resetChantCount('today')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                    僅歸零「今日已誦」遍數
                 </button>
-                <button onclick="resetChantCount('all')" class="w-full bg-red-900 hover:bg-red-800 text-amber-100 font-bold py-2.5 rounded-xl text-sm transition">
-                    歸零「今日」與「累計總數」
+                <button onclick="resetChantCount('all')" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                    全部歸零（包含累計總數）
                 </button>
                 <button onclick="closeResetCounterModal()" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium py-2 rounded-xl text-xs transition">
-                    取消返回
+                    取消
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- PWA 安裝至桌面說明彈窗 (附 Android 與 iPhone 詳細步驟) -->
-    <div id="install-modal" class="no-print hidden fixed inset-0 z-[130] bg-black/65 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeInstallModal()">
+    <!-- 安裝至桌面說明彈窗 (附 Android 與 iPhone 詳細圖文步驟) -->
+    <div id="install-modal" class="no-print hidden fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeInstallModal()">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-400 space-y-4 relative max-h-[90vh] overflow-y-auto">
-            <button onclick="closeInstallModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100" aria-label="關閉">✕</button>
+            <button type="button" onclick="closeInstallModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100" aria-label="關閉">✕</button>
 
             <div class="text-center space-y-1">
-                <span class="inline-block bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">PWA 獨立版 · 離線隨時誦經</span>
-                <h3 class="serif-font text-xl md:text-2xl font-black text-red-950 pt-1">📲 將《天上聖母經》安裝至桌面</h3>
-                <p class="text-xs text-stone-600 leading-relaxed">
-                    加入手機主畫面後，可像專屬 App 一樣全螢幕開啟、離線閱讀並保留您的誦經計次紀錄。
-                </p>
+                <span class="inline-block bg-amber-100 text-red-950 text-xs font-bold px-3 py-1 rounded-full">PWA 獨立應用 · 離線隨身恭誦</span>
+                <h3 class="serif-font text-2xl font-black text-red-950 pt-1">將《天上聖母經》安裝至手機桌面</h3>
+                <p class="text-xs text-stone-500">免下載 App 商店，直接釘選至主畫面全螢幕開啟</p>
             </div>
 
-            <!-- Android 一鍵安裝觸發鈕 (僅在瀏覽器支援原生安裝提示時顯示) -->
-            <div id="android-native-install-box" class="hidden">
-                <button type="button" onclick="triggerNativeInstallPrompt()" class="w-full bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2">
-                    <span>⚡</span>
-                    <span>立即一鍵安裝到手機桌面</span>
+            <!-- Android 原生一鍵安裝提示按鈕 (支援時自動顯示) -->
+            <div id="android-native-install-box" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-center">
+                <button type="button" onclick="triggerNativeInstallPrompt()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm shadow transition">
+                    ⚡ 立即一鍵安裝到手機桌面
                 </button>
             </div>
 
-            <!-- Android 與 iPhone 雙平台步驟說明 -->
-            <div class="space-y-3 text-xs md:text-sm text-stone-700">
-                <!-- Android 說明區塊 -->
-                <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
-                    <div class="font-bold text-emerald-950 flex items-center space-x-1.5 text-sm">
-                        <span>🤖</span>
-                        <span>Android 安卓手機（建議使用 Chrome 瀏覽器）</span>
-                    </div>
-                    <ol class="list-decimal list-inside space-y-1 text-stone-700 leading-relaxed">
-                        <li>點擊瀏覽器右上角的 <strong>「⋮」（三個點選單）</strong>。</li>
-                        <li>在選單中點選 <strong>「安裝應用程式」</strong> 或 <strong>「加到主畫面」</strong>。</li>
-                        <li>點擊 <strong>「安裝」</strong> 確認，桌面即會出現「天上聖母經」聖字圖示。</li>
-                    </ol>
+            <!-- Android 安卓手機操作說明 -->
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-4 space-y-2 text-xs text-stone-700">
+                <div class="flex items-center space-x-2 font-bold text-red-950 text-sm">
+                    <span class="text-lg">🤖</span>
+                    <span>Android 安卓手機（Chrome 瀏覽器）</span>
                 </div>
-
-                <!-- iPhone / iPad 說明區塊 -->
-                <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 space-y-1.5">
-                    <div class="font-bold text-red-950 flex items-center space-x-1.5 text-sm">
-                        <span>🍎</span>
-                        <span>iPhone / iPad（請務必使用 Safari 瀏覽器）</span>
-                    </div>
-                    <ol class="list-decimal list-inside space-y-1 text-stone-700 leading-relaxed">
-                        <li>若從 LINE 點開，請先點右下角選單並選擇 <strong>「以預設瀏覽器（Safari）開啟」</strong>。</li>
-                        <li>點擊 Safari 畫面最下方工具列中間的 <strong>「分享」按鈕（方框加向上箭頭 ⬆️）</strong>。</li>
-                        <li>往下滑動選單，點選 <strong>「加入主畫面」</strong>（旁邊有 ＋ 號圖示）。</li>
-                        <li>點擊右上角 <strong>「新增」</strong>，即可在手機桌面直接開啟使用。</li>
-                    </ol>
-                </div>
+                <ol class="list-decimal list-inside space-y-1.5 leading-relaxed pl-1">
+                    <li>使用手機內建的 <strong>Chrome 瀏覽器</strong> 開啟本網頁。</li>
+                    <li>點擊畫面右上角的 <strong>「⋮」</strong> 更多選單圖示。</li>
+                    <li>點選 <strong>「安裝應用程式」</strong> 或 <strong>「加到主畫面」</strong>。</li>
+                    <li>點擊 <strong>「安裝 / 新增」</strong>，桌面即會出現專屬聖母經圖示。</li>
+                </ol>
             </div>
 
-            <button type="button" onclick="closeInstallModal()" class="w-full bg-red-900 hover:bg-red-800 text-amber-100 font-bold py-2.5 rounded-xl text-sm shadow transition">
+            <!-- iPhone / iPad 操作說明 -->
+            <div class="bg-red-50/60 border border-red-200 rounded-xl p-4 space-y-2 text-xs text-stone-700">
+                <div class="flex items-center space-x-2 font-bold text-red-950 text-sm">
+                    <span class="text-lg">🍎</span>
+                    <span>iPhone / iPad（Safari 瀏覽器）</span>
+                </div>
+                <ol class="list-decimal list-inside space-y-1.5 leading-relaxed pl-1">
+                    <li>請務必使用 <strong>Safari 瀏覽器</strong> 開啟本網頁（若從 LINE 開啟，請先點右下角「在預設瀏覽器中開啟」）。</li>
+                    <li>點擊螢幕正下方工具列的 <strong>「分享（⬆️ 方框向上箭頭）」</strong> 圖示。</li>
+                    <li>向下滑動選單，點擊 <strong>「加入主畫面」</strong>。</li>
+                    <li>確認名稱為「天上聖母經」後，點擊右上角 <strong>「新增」</strong> 即可完成！</li>
+                </ol>
+            </div>
+
+            <button type="button" onclick="closeInstallModal()" class="w-full bg-red-950 hover:bg-red-900 text-amber-100 font-bold py-2.5 rounded-xl text-sm transition">
                 我知道了
             </button>
         </div>
     </div>
 
-    <!-- JavaScript 核心控制邏輯 -->
+    <!-- JavaScript 核心邏輯控制 -->
     <script>
         // ==========================================
-        // --- 0. 防程式碼側窺與智慧財產權保護 (F12 / DevTools / 右鍵鎖定) ---
+        // --- 0. 著作權與防程式碼側窺安全防護 (F12 / DevTools 攔截) ---
         // ==========================================
         let antiInspectLocked = false;
 
@@ -1019,7 +1013,7 @@
         function attemptUnlockAntiInspect() {
             const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
             const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
-            if (widthDiff > 200 || heightDiff > 220) {
+            if (widthDiff > 210 || heightDiff > 230) {
                 return;
             }
             antiInspectLocked = false;
@@ -1034,7 +1028,7 @@
             return false;
         }
 
-        (function initAntiInspectGuard() {
+        (function initAntiInspectGuards() {
             document.addEventListener('keydown', function (e) {
                 const key = (e.key || '').toUpperCase();
                 const isF12 = key === 'F12' || e.keyCode === 123;
@@ -1055,11 +1049,166 @@
                     if (antiInspectLocked) return;
                     const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
                     const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
-                    if (widthDiff > 210 || heightDiff > 230) {
-                        triggerAntiInspectLock();
-                    }
+                    if (widthDiff > 210 || heightDiff > 230) triggerAntiInspectLock();
                 }, 1200);
             }
+        })();
+
+        // ==========================================
+        // --- 0-1. 懸浮設定面板可視範圍邊界防裁切 ---
+        // ==========================================
+        function clampFloatingContainerToViewport() {
+            const container = document.getElementById('floating-control-container');
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            const pad = 8;
+            let nextLeft = rect.left;
+            let nextTop = rect.top;
+            let changed = false;
+
+            if (rect.right > window.innerWidth - pad) {
+                nextLeft = Math.max(pad, window.innerWidth - rect.width - pad);
+                changed = true;
+            }
+            if (rect.left < pad) {
+                nextLeft = pad;
+                changed = true;
+            }
+            if (rect.bottom > window.innerHeight - pad) {
+                nextTop = Math.max(pad, window.innerHeight - rect.height - pad);
+                changed = true;
+            }
+            if (rect.top < pad) {
+                nextTop = pad;
+                changed = true;
+            }
+
+            if (changed) {
+                container.style.right = 'auto';
+                container.style.bottom = 'auto';
+                container.style.left = nextLeft + 'px';
+                container.style.top = nextTop + 'px';
+            }
+
+            if (nextLeft + rect.width / 2 < window.innerWidth / 2) {
+                container.classList.remove('items-end');
+                container.classList.add('items-start');
+            } else {
+                container.classList.remove('items-start');
+                container.classList.add('items-end');
+            }
+        }
+
+        function toggleTtsSettings() {
+            const panel = document.getElementById('tts-settings-panel');
+            const container = document.getElementById('floating-control-container');
+            const bar = document.getElementById('floating-tts-bar');
+            if (!panel) return;
+
+            const willOpen = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden');
+
+            if (willOpen && container && bar) {
+                const barRect = bar.getBoundingClientRect();
+                if (barRect.top < window.innerHeight * 0.45) {
+                    container.insertBefore(bar, panel);
+                } else {
+                    container.insertBefore(panel, bar);
+                }
+                requestAnimationFrame(clampFloatingContainerToViewport);
+            }
+        }
+
+        // 點擊設定面板外部任意處自動收合設定，避免擋住畫面
+        document.addEventListener('pointerdown', function(e) {
+            const panel = document.getElementById('tts-settings-panel');
+            const container = document.getElementById('floating-control-container');
+            if (panel && !panel.classList.contains('hidden') && container && !container.contains(e.target)) {
+                panel.classList.add('hidden');
+            }
+        });
+
+        // ==========================================
+        // --- 5. 懸浮控制台自由拖曳邏輯 ---
+        // ==========================================
+        (function initDraggableFloatingControl() {
+            const container = document.getElementById('floating-control-container');
+            const dragHandle = document.getElementById('floating-tts-bar');
+            const panelHeaderHandle = document.getElementById('tts-settings-header');
+            if (!container || !dragHandle) return;
+
+            let isDragging = false;
+            let hasMoved = false;
+            let startX = 0, startY = 0;
+            let initialLeft = 0, initialTop = 0;
+
+            function onDragStart(e) {
+                if (e.target && e.target.closest('button')) return;
+                const point = e.touches ? e.touches[0] : e;
+                startX = point.clientX;
+                startY = point.clientY;
+                const rect = container.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                isDragging = true;
+                hasMoved = false;
+            }
+
+            function onDragMove(e) {
+                if (!isDragging) return;
+                const point = e.touches ? e.touches[0] : e;
+                const dx = point.clientX - startX;
+                const dy = point.clientY - startY;
+
+                if (!hasMoved && Math.hypot(dx, dy) < 5) return;
+                hasMoved = true;
+
+                if (e.cancelable) e.preventDefault();
+
+                const rect = container.getBoundingClientRect();
+                const maxLeft = window.innerWidth - rect.width - 8;
+                const maxTop = window.innerHeight - rect.height - 8;
+
+                const nextLeft = Math.min(Math.max(8, initialLeft + dx), Math.max(8, maxLeft));
+                const nextTop = Math.min(Math.max(8, initialTop + dy), Math.max(8, maxTop));
+
+                container.style.right = 'auto';
+                container.style.bottom = 'auto';
+                container.style.left = nextLeft + 'px';
+                container.style.top = nextTop + 'px';
+
+                if (nextLeft + rect.width / 2 < window.innerWidth / 2) {
+                    container.classList.remove('items-end');
+                    container.classList.add('items-start');
+                } else {
+                    container.classList.remove('items-start');
+                    container.classList.add('items-end');
+                }
+            }
+
+            function onDragEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+            }
+
+            container.addEventListener('click', function(e) {
+                if (hasMoved) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    hasMoved = false;
+                }
+            }, true);
+
+            [dragHandle, panelHeaderHandle].forEach(handle => {
+                if (!handle) return;
+                handle.addEventListener('mousedown', onDragStart);
+                handle.addEventListener('touchstart', onDragStart, { passive: true });
+            });
+            window.addEventListener('mousemove', onDragMove);
+            window.addEventListener('mouseup', onDragEnd);
+            window.addEventListener('touchmove', onDragMove, { passive: false });
+            window.addEventListener('touchend', onDragEnd);
+            window.addEventListener('resize', clampFloatingContainerToViewport);
         })();
 
         // ==========================================
@@ -1329,103 +1478,6 @@
             }
             isZhuyinVisible = !isZhuyinVisible;
         }
-
-        function toggleTtsSettings() {
-            const panel = document.getElementById('tts-settings-panel');
-            const container = document.getElementById('floating-control-container');
-            const bar = document.getElementById('floating-tts-bar');
-            if (!panel) return;
-
-            panel.classList.toggle('hidden');
-
-            // 智慧調整彈出方向：若控制台被拖到螢幕上半部，設定面板改為在下方展開
-            if (!panel.classList.contains('hidden') && container && bar) {
-                const rect = container.getBoundingClientRect();
-                if (rect.top < window.innerHeight * 0.45) {
-                    container.insertBefore(bar, panel);
-                } else {
-                    container.insertBefore(panel, bar);
-                }
-            }
-        }
-
-        // ==========================================
-        // --- 5. 懸浮控制台自由拖曳邏輯 ---
-        // ==========================================
-        (function initDraggableFloatingControl() {
-            const container = document.getElementById('floating-control-container');
-            const dragHandle = document.getElementById('floating-tts-bar');
-            if (!container || !dragHandle) return;
-
-            let isDragging = false;
-            let hasMoved = false;
-            let startX = 0, startY = 0;
-            let initialLeft = 0, initialTop = 0;
-
-            function onDragStart(e) {
-                const point = e.touches ? e.touches[0] : e;
-                startX = point.clientX;
-                startY = point.clientY;
-                const rect = container.getBoundingClientRect();
-                initialLeft = rect.left;
-                initialTop = rect.top;
-                isDragging = true;
-                hasMoved = false;
-            }
-
-            function onDragMove(e) {
-                if (!isDragging) return;
-                const point = e.touches ? e.touches[0] : e;
-                const dx = point.clientX - startX;
-                const dy = point.clientY - startY;
-
-                if (!hasMoved && Math.hypot(dx, dy) < 5) return;
-                hasMoved = true;
-
-                if (e.cancelable) e.preventDefault();
-
-                const rect = container.getBoundingClientRect();
-                const maxLeft = window.innerWidth - rect.width - 8;
-                const maxTop = window.innerHeight - rect.height - 8;
-
-                const nextLeft = Math.min(Math.max(8, initialLeft + dx), Math.max(8, maxLeft));
-                const nextTop = Math.min(Math.max(8, initialTop + dy), Math.max(8, maxTop));
-
-                container.style.right = 'auto';
-                container.style.bottom = 'auto';
-                container.style.left = nextLeft + 'px';
-                container.style.top = nextTop + 'px';
-
-                if (nextLeft + rect.width / 2 < window.innerWidth / 2) {
-                    container.classList.remove('items-end');
-                    container.classList.add('items-start');
-                } else {
-                    container.classList.remove('items-start');
-                    container.classList.add('items-end');
-                }
-            }
-
-            function onDragEnd() {
-                if (!isDragging) return;
-                isDragging = false;
-            }
-
-            container.addEventListener('click', function(e) {
-                if (hasMoved) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    hasMoved = false;
-                }
-            }, true);
-
-            dragHandle.addEventListener('mousedown', onDragStart);
-            window.addEventListener('mousemove', onDragMove);
-            window.addEventListener('mouseup', onDragEnd);
-
-            dragHandle.addEventListener('touchstart', onDragStart, { passive: true });
-            window.addEventListener('touchmove', onDragMove, { passive: false });
-            window.addEventListener('touchend', onDragEnd);
-        })();
 
         // ==========================================
         // --- 6. 卡拉 OK 同步語音朗讀與循環引擎 ---
