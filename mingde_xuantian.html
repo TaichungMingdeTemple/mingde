@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <!-- 單檔獨立 PWA 設定 -->
+    <link id="inline-manifest" rel="manifest" href="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="玄天上帝真經">
+    <meta name="theme-color" content="#0f172a">
+    <link id="apple-touch-icon-link" rel="apple-touch-icon" href="">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玄天上帝真經｜臺中明德宮天聖堂 · 友宮共修結緣版</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts 思源宋體與思源黑體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        .hidden { display: none !important; }
+        button svg, a svg { width: 1rem; height: 1rem; max-width: 1.25rem; max-height: 1.25rem; flex-shrink: 0; }
+        #xuantian-morning-svg { width: 100%; height: auto; max-width: 100%; display: block; }
+
+        html, body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            overflow-x: clip;
+            scroll-behavior: smooth;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .serif-font {
+            font-family: 'Noto Serif TC', serif;
+        }
+        ruby {
+            ruby-position: over;
+            margin: 0 0.05em;
+        }
+        rt {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.5em;
+            color: #1e3a8a;
+            font-weight: 500;
+            user-select: none;
+        }
+        .hide-zhuyin rt {
+            display: none !important;
+        }
+
+        /* 正在朗讀的段落高亮效果 */
+        .reading-highlight {
+            background-color: rgba(254, 240, 138, 0.72);
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease-in-out;
+            padding: 0.25rem 0.5rem;
+            margin: -0.25rem -0.5rem;
+            box-shadow: 0 0 12px rgba(30, 58, 138, 0.28);
+        }
+
+        /* 動態字體縮放控制 */
+        #scripture-content {
+            --font-scale: 1;
+        }
+        #scripture-content .serif-font {
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.95;
+        }
+        @media (min-width: 768px) {
+            #scripture-content .serif-font {
+                font-size: calc(1.5rem * var(--font-scale));
+            }
+        }
+        #scripture-content h3.serif-font {
+            font-size: calc(1.5rem * var(--font-scale));
+        }
+        @media (min-width: 768px) {
+            #scripture-content h3.serif-font {
+                font-size: calc(1.875rem * var(--font-scale));
+            }
+        }
+        #scripture-content h4 {
+            font-size: calc(1.2rem * var(--font-scale));
+        }
+        @media (min-width: 768px) {
+            #scripture-content h4 {
+                font-size: calc(1.4rem * var(--font-scale));
+            }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .avoid-break { page-break-inside: avoid; }
+            .shadow-lg, .shadow-md, .shadow-sm { box-shadow: none !important; }
+            .reading-highlight { background-color: transparent !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col" oncontextmenu="return handleContextMenuGuard(event)" ondragstart="return false;">
+
+    <!-- 防偷窺安全鎖定遮罩 -->
+    <div id="antiInspectOverlay" class="no-print hidden fixed inset-0 z-[150] bg-stone-950/95 backdrop-blur-xl flex items-center justify-center p-6">
+        <div class="max-w-md w-full bg-slate-900 border-2 border-amber-400/80 rounded-3xl p-6 text-center space-y-4 shadow-2xl text-amber-50">
+            <div class="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-400/50 text-amber-300 flex items-center justify-center mx-auto text-3xl">🛡️</div>
+            <h2 class="serif-font text-lg sm:text-xl font-black text-white">安全防護已啟動｜禁止檢視原始碼與除錯</h2>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">系統偵測到開發者工具或未授權檢視行為，為保護數位版權與程式架構安全，已自動暫停系統運作。</p>
+            <button type="button" onclick="attemptUnlockAntiInspect()" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition shadow-lg">我已關閉開發者工具，恢復系統運作</button>
+        </div>
+    </div>
+
+    <!-- 頂部常駐頁首 -->
+    <header id="main-top-header" class="no-print sticky top-0 z-40 bg-slate-950/95 backdrop-blur-md text-amber-50 shadow-lg border-b-2 border-amber-400/80">
+        <!-- 頂部結緣敬獻橫幅（支援 ?to=友宮名稱 動態替換） -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-b border-amber-400/40 px-3 py-1.5 text-center">
+            <p id="top-diplomatic-banner" class="serif-font text-xs sm:text-sm font-bold tracking-wider text-amber-200">
+                🏮 臺中明德宮天聖堂 鸞生 <span class="text-white underline decoration-amber-300 underline-offset-4">黃國豐</span> 製作 · 敬獻友宮與十方善信免費恭誦《玄天上帝真經》 ⚔️
+            </p>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-3 md:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 md:gap-4">
+            <div class="flex items-center space-x-2.5">
+                <span class="text-xl md:text-2xl">🐢</span>
+                <div>
+                    <div class="flex flex-wrap items-center gap-1.5 md:gap-2">
+                        <h1 class="serif-font font-black text-base md:text-xl tracking-wide text-amber-100">玄天上帝真經（北極帝爺經）</h1>
+                        <a href="https://taichungmingdetemple.github.io/fortune/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 bg-amber-300/20 hover:bg-amber-300/30 text-amber-200 hover:text-white border border-amber-400/60 px-2.5 py-0.5 rounded-full text-[11px] md:text-xs font-medium transition shadow-sm" title="前往認識台中市明德宮天聖堂三曹對案直轄鸞堂與AI科技化應用">
+                            <span>🏮 認識台中市明德宮天聖堂 三曹對案直轄鸞堂</span>
+                            <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 md:gap-2 w-full md:w-auto justify-between md:justify-end">
+                <!-- 語音朗讀與設定按鈕群 -->
+                <div class="flex items-center shadow-sm">
+                    <button id="tts-btn" onclick="toggleSpeech()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 md:px-3.5 py-1.5 rounded-l-lg text-xs md:text-sm font-bold transition flex items-center space-x-1 border border-amber-200 border-r-0">
+                        <svg id="tts-icon-play" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 10v4a2 2 0 002 2h3l5 5V3l-5 5H7a2 2 0 00-2 2z"></path></svg>
+                        <svg id="tts-icon-pause" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="tts-btn-text">語音朗讀</span>
+                    </button>
+                    <button id="tts-stop-btn" onclick="stopSpeech()" class="hidden bg-red-900 hover:bg-red-800 text-amber-100 px-2.5 py-1.5 text-xs md:text-sm font-medium transition border border-amber-200 border-r-0 border-l-0" title="停止朗讀">⏹️</button>
+                    <button onclick="toggleTtsSettings()" class="bg-amber-600 hover:bg-amber-500 text-amber-50 px-2.5 py-1.5 rounded-r-lg text-xs md:text-sm font-medium transition border border-amber-200 focus:outline-none" title="語音與循環設定">⚙️</button>
+                </div>
+
+                <!-- 注音顯示切換 -->
+                <button id="toggle-zhuyin-btn" onclick="toggleZhuyin()" class="bg-slate-800 hover:bg-slate-700 text-amber-100 px-2.5 md:px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium transition flex items-center space-x-1 border border-slate-600">
+                    <span>ㄅㄆㄇ</span>
+                    <span id="zhuyin-status-text" class="hidden lg:inline">注音：顯示中</span>
+                </button>
+
+                <!-- 字體大小縮放控制 -->
+                <div class="flex items-center shadow-sm" title="調整經文字體大小">
+                    <button onclick="changeFontSize(-0.15)" class="bg-slate-800 hover:bg-slate-700 text-amber-100 px-2.5 py-1.5 rounded-l-lg text-xs md:text-sm font-bold transition border border-slate-600 border-r-0">字-</button>
+                    <span id="font-size-label" class="bg-slate-900 text-amber-200 px-2 py-1.5 text-xs font-mono border-t border-b border-slate-600 select-none">100%</span>
+                    <button onclick="changeFontSize(0.15)" class="bg-slate-800 hover:bg-slate-700 text-amber-100 px-2.5 py-1.5 rounded-r-lg text-xs md:text-sm font-bold transition border border-slate-600 border-l-0">字+</button>
+                </div>
+
+                <!-- 讀經次數計數徽章 -->
+                <div id="loop-counter-badge" class="hidden bg-slate-900 text-amber-300 px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-bold border border-amber-400/70 shadow-inner flex items-center space-x-1">
+                    <span>本次第 <span id="loop-count-text">1</span> 遍</span>
+                </div>
+
+                <!-- 友宮分享結緣按鈕 -->
+                <button onclick="shareScripture()" class="bg-emerald-700 hover:bg-emerald-600 text-amber-50 font-bold px-3 py-1.5 rounded-lg text-xs md:text-sm shadow-md transition flex items-center space-x-1 border border-emerald-500/70" title="致贈友宮或分享給十方善信">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                    <span>友宮<span class="hidden sm:inline">結緣</span></span>
+                </button>
+
+                <!-- 安裝至桌面按鈕 -->
+                <button type="button" onclick="openInstallModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-100 font-bold px-2.5 md:px-3 py-1.5 rounded-lg text-xs md:text-sm shadow-md transition flex items-center space-x-1 border border-slate-500/70">
+                    <span>📲</span>
+                    <span>安裝</span>
+                </button>
+
+                <!-- 輸出 PDF 按鈕 -->
+                <button onclick="window.print()" class="hidden md:flex bg-amber-300 hover:bg-amber-200 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-sm shadow-md transition items-center space-x-1">
+                    <span>PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 全域懸浮控制台 -->
+    <div id="floating-control-container" class="no-print fixed bottom-5 right-4 z-50 flex flex-col items-end space-y-2.5 touch-none select-none max-w-[calc(100vw-1rem)]">
+        <div id="tts-settings-panel" class="hidden w-[calc(100vw-2rem)] max-w-sm max-h-[75vh] overflow-y-auto bg-slate-950/95 backdrop-blur-md text-amber-100 rounded-2xl shadow-2xl border-2 border-amber-400/80 p-4 space-y-3 text-xs md:text-sm transition-all touch-auto">
+            <div id="tts-settings-header" class="flex items-center justify-between border-b border-slate-800 pb-2 cursor-grab active:cursor-grabbing select-none">
+                <span class="font-bold text-amber-300 flex items-center space-x-1.5"><span>⚙️</span><span>誦經語音與循環設定</span></span>
+                <button type="button" onclick="toggleTtsSettings()" class="text-amber-300 hover:text-white bg-slate-800 px-2.5 py-1 rounded-lg font-bold shrink-0">✕ 關閉</button>
+            </div>
+            <div class="space-y-1">
+                <label class="block text-amber-200 font-bold">📱 朗讀聲音：</label>
+                <select id="voice-select" class="w-full text-black rounded-lg px-2.5 py-1.5 bg-amber-50 border border-amber-300 focus:outline-none text-xs">
+                    <option value="">正在載入系統聲音...</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 gap-2">
+                <div class="flex items-center justify-between bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+                    <label class="whitespace-nowrap text-amber-200 font-bold">⏩ 語速：</label>
+                    <input type="range" id="rate-select" min="0.5" max="2.5" step="0.1" value="1.2" class="w-32 accent-amber-400">
+                    <span id="rate-display" class="w-9 text-right font-mono text-amber-300 font-bold">1.20</span>
+                </div>
+                <div class="flex items-center justify-between bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+                    <label class="whitespace-nowrap text-amber-200 font-bold">🎵 音調：</label>
+                    <input type="range" id="pitch-select" min="0.5" max="1.8" step="0.1" value="1.0" class="w-32 accent-amber-400">
+                    <span class="text-[11px] text-slate-300">威儀莊嚴</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-0.5">
+                <div class="flex items-center bg-slate-900 rounded-xl border border-slate-700 p-1">
+                    <button onclick="changeFontSize(-0.15)" class="px-2.5 py-1 text-amber-100 font-bold hover:bg-slate-800 rounded-lg">字-</button>
+                    <span class="px-2 font-mono text-amber-300 text-xs">字體</span>
+                    <button onclick="changeFontSize(0.15)" class="px-2.5 py-1 text-amber-100 font-bold hover:bg-slate-800 rounded-lg">字+</button>
+                </div>
+                <button onclick="toggleZhuyin()" class="flex-grow bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold py-2 px-3 rounded-xl border border-amber-300 text-center">ㄅㄆㄇ 切換注音</button>
+            </div>
+            <div class="bg-slate-900 px-3 py-2.5 rounded-xl border border-slate-800 space-y-2">
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="loop-mode-cb" class="w-4 h-4 accent-amber-400 cursor-pointer" checked>
+                    <label for="loop-mode-cb" class="text-amber-200 font-bold cursor-pointer select-none">🔁 自動循環誦經 (接力重誦真經)</label>
+                </div>
+                <div class="flex items-center justify-between text-xs pl-6">
+                    <label for="loop-target-select" class="text-slate-300">目標遍數上限：</label>
+                    <select id="loop-target-select" class="bg-slate-950 text-amber-100 border border-slate-700 rounded-lg px-2 py-1 font-bold outline-none">
+                        <option value="0" selected>♾️ 無限循環</option>
+                        <option value="3">3 遍圓滿</option>
+                        <option value="7">7 遍圓滿</option>
+                        <option value="21">21 遍圓滿</option>
+                        <option value="108">108 遍圓滿</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="floating-tts-bar" class="flex items-center bg-slate-950/95 backdrop-blur-md text-amber-50 rounded-full shadow-2xl border-2 border-amber-400/80 p-1.5 space-x-1.5 transition-shadow cursor-grab active:cursor-grabbing" title="按住可自由拖曳移動控制台位置">
+            <div class="pl-2 pr-1 text-amber-400/90 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path></svg>
+            </div>
+            <button onclick="toggleSpeech()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold px-4 py-2 rounded-full text-sm flex items-center space-x-1.5 shadow">
+                <span id="floating-tts-icon">▶️</span>
+                <span id="floating-tts-text">語音朗讀</span>
+            </button>
+            <button id="floating-stop-btn" onclick="stopSpeech()" class="hidden bg-stone-800 hover:bg-stone-700 active:scale-95 text-amber-200 font-bold px-3 py-2 rounded-full text-sm">⏹️</button>
+            <button onclick="toggleTtsSettings()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-100 px-3 py-2 rounded-full text-sm">⚙️</button>
+        </div>
+    </div>
+
+    <!-- 主內容區 -->
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-8">
+
+        <!-- 友宮專屬致贈賀匾（若網址帶有 ?to=友宮名稱 時自動顯示） -->
+        <div id="diplomatic-gift-card" class="hidden bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 text-amber-50 rounded-2xl shadow-lg border-2 border-amber-400 p-5 mb-6 text-center space-y-1.5">
+            <span class="inline-block bg-amber-300 text-slate-950 text-xs font-black px-3 py-0.5 rounded-full tracking-widest">臺中明德宮天聖堂 · 友宮道誼致贈賀禮</span>
+            <h3 id="diplomatic-temple-heading" class="serif-font text-xl md:text-2xl font-black text-amber-200 tracking-wide">敬賀 友宮 威靈顯赫 · 香火鼎盛</h3>
+            <p class="text-xs md:text-sm text-slate-200">謹以《玄天上帝說報父母恩重經》數位共修結緣本敬獻貴宮，祈願北極真武大帝護國佑民、道誼長存。</p>
+        </div>
+
+        <!-- 經本封面卡片 -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-300/80 p-6 md:p-10 mb-6 text-center relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-indigo-100 rounded-full opacity-60 blur-xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-amber-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>
+            <p class="text-indigo-950 font-bold tracking-widest text-sm md:text-base mb-2">北極鎮天 · 報親弘孝 · 臺中明德宮天聖堂敬獻</p>
+            <h2 class="serif-font font-black text-3xl md:text-5xl text-slate-950 tracking-wider mb-4">玄天上帝真經</h2>
+            <div class="w-24 h-1 bg-amber-500 mx-auto rounded-full mb-4"></div>
+            <p class="text-stone-600 text-sm md:text-base max-w-xl mx-auto mb-5">
+                專為全台真武廟、北極殿及奉祀玄天上帝友宮製作。完整收錄稟告文式、淨神咒集、北極玄天上帝寶誥、開經偈、《玄天上帝說報父母恩重經》正文與收經回向讚。
+            </p>
+
+            <!-- 快速章節導覽 -->
+            <div class="no-print flex flex-wrap items-center justify-center gap-2 pt-2 text-xs md:text-sm">
+                <a href="#xuantian-oracle-section" class="bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3.5 py-1.5 rounded-full shadow-sm transition">⚔️ 求帝爺公護佑靈感籤</a>
+                <a href="#sec-jingshen" class="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 px-3 py-1.5 rounded-full font-medium transition">淨神咒集</a>
+                <a href="#sec-baogao" class="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 px-3 py-1.5 rounded-full font-medium transition">玄天上帝寶誥</a>
+                <a href="#sec-main-scripture" class="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 px-3 py-1.5 rounded-full font-medium transition">報父母恩重經</a>
+                <a href="#sec-huixiang" class="bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 px-3 py-1.5 rounded-full font-medium transition">收經讚與回向</a>
+            </div>
+        </div>
+
+        <!-- 誦經計次修持紀錄 -->
+        <section id="chant-counter-section" class="no-print bg-white rounded-2xl shadow-md border border-slate-300/80 p-5 md:p-6 mb-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-3 text-center md:text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-950 text-amber-300 flex items-center justify-center text-2xl shadow-inner shrink-0">📿</div>
+                    <div>
+                        <h3 class="serif-font font-bold text-lg md:text-xl text-slate-950">虔誠誦經計次修持紀錄</h3>
+                        <p class="text-xs text-stone-500">語音循環完成一遍自動累計，亦可於自行誦畢後手動點擊記數</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="bg-slate-100 border border-slate-300 rounded-xl px-4 py-2 text-center min-w-[84px]">
+                        <span class="block text-[11px] text-stone-500 font-medium">今日已誦</span>
+                        <span id="today-chant-count" class="serif-font font-black text-2xl text-slate-900">0</span>
+                        <span class="text-xs text-stone-500">遍</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-center min-w-[84px]">
+                        <span class="block text-[11px] text-stone-500 font-medium">累計總數</span>
+                        <span id="total-chant-count" class="serif-font font-black text-2xl text-amber-800">0</span>
+                        <span class="text-xs text-stone-500">遍</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto justify-center">
+                    <button onclick="incrementChantCount(1)" class="flex-grow md:flex-grow-0 bg-slate-900 hover:bg-slate-800 active:scale-95 text-amber-200 font-bold px-4 py-2.5 rounded-xl text-sm shadow transition flex items-center justify-center space-x-1.5">
+                        <span>🙏</span>
+                        <span>＋ 圓滿 1 遍</span>
+                    </button>
+                    <button onclick="openResetCounterModal()" class="bg-stone-100 hover:bg-stone-200 text-stone-600 font-medium px-3 py-2.5 rounded-xl text-xs transition">重置</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 玄天上帝每日靈感指引籤 & 動態問候/友宮祝賀圖卡 -->
+        <section id="xuantian-oracle-section" class="no-print bg-gradient-to-br from-slate-100 via-white to-amber-50/60 rounded-2xl shadow-lg border-2 border-slate-400/70 p-6 md:p-10 mb-8 relative overflow-hidden">
+            <div class="text-center max-w-2xl mx-auto space-y-3 mb-6">
+                <span class="inline-block bg-slate-950 text-amber-300 text-xs font-bold px-3 py-1 rounded-full tracking-widest">北極真武 · 蕩魔護道指引</span>
+                <h3 class="serif-font text-2xl md:text-3xl font-black text-slate-950">恭請 北極玄天上帝 賜予今日正氣指引</h3>
+                <p class="text-stone-600 text-sm md:text-base">
+                    靜心默念「北極鎮天真武玄天上帝玉虛師相金闕化身蕩魔永鎮終劫濟苦天尊」聖號，抽取《玄天上帝真經》智慧籤卡。支援日常問候與**友宮聖誕、宮慶、參香祝賀圖卡**一鍵匯出分享。
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+                <button id="draw-lot-btn" onclick="drawXuantianLot()" class="w-full sm:w-auto bg-gradient-to-r from-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 text-amber-200 font-bold text-lg px-8 py-4 rounded-xl shadow-md hover:shadow-xl transition transform active:scale-95 flex items-center justify-center space-x-2 border border-amber-400/70">
+                    <span id="lot-shake-icon" class="text-2xl inline-block">⚔️</span>
+                    <span id="draw-lot-btn-text">誠心求取今日帝爺公指引</span>
+                </button>
+            </div>
+
+            <!-- 籤詩與動態 SVG 圖卡顯示區 -->
+            <div id="oracle-result-container" class="hidden transition-all duration-500 max-w-lg mx-auto">
+                <div class="mt-2 mb-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-slate-200/80 p-3 rounded-xl border border-slate-400/60 shadow-inner">
+                    <label for="greeting-select" class="text-sm font-bold text-slate-950 flex items-center space-x-1">
+                        <span>✏️</span><span>圖卡抬頭模式：</span>
+                    </label>
+                    <select id="greeting-select" onchange="updateGreetingText()" class="bg-white border-2 border-slate-700 text-slate-950 text-sm rounded-lg px-3.5 py-1.5 font-bold shadow-sm outline-none cursor-pointer">
+                        <option value="auto" selected>⏰ 自動偵測時段 (早/日/晚安)</option>
+                        <option value="早安">🌅 日常：早安吉祥</option>
+                        <option value="日安">☀️ 日常：日安順遂</option>
+                        <option value="晚安">🌙 日常：晚安寧靜</option>
+                        <option value="恭祝聖誕千秋">🏮 外交：恭祝聖誕千秋</option>
+                        <option value="恭賀宮慶圓滿">🎊 外交：恭賀宮慶圓滿</option>
+                        <option value="參香道誼長存">🤝 外交：參香道誼長存</option>
+                    </select>
+                    <span id="detected-time-badge" class="text-xs font-bold text-slate-950 bg-amber-300/90 px-2.5 py-1 rounded-full"></span>
+                </div>
+
+                <!-- 動態 SVG 畫布（玄武墨藍七星鎏金風格） -->
+                <div id="morning-card-wrapper" class="rounded-2xl overflow-hidden shadow-2xl border-4 border-amber-400 bg-slate-950 relative">
+                    <svg id="xuantian-morning-svg" viewBox="0 0 600 820" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto block">
+                        <defs>
+                            <linearGradient id="xuantianBgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#020617"/>
+                                <stop offset="35%" stop-color="#1e1b4b"/>
+                                <stop offset="72%" stop-color="#1d4ed8"/>
+                                <stop offset="100%" stop-color="#fef3c7"/>
+                            </linearGradient>
+                            <radialGradient id="xuantianStarGlow" cx="50%" cy="22%" r="45%">
+                                <stop offset="0%" stop-color="#fef9c3" stop-opacity="0.95"/>
+                                <stop offset="45%" stop-color="#60a5fa" stop-opacity="0.45"/>
+                                <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0"/>
+                            </radialGradient>
+                            <linearGradient id="xuantianGoldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fde68a"/>
+                                <stop offset="50%" stop-color="#f59e0b"/>
+                                <stop offset="100%" stop-color="#fef3c7"/>
+                            </linearGradient>
+                        </defs>
+
+                        <rect width="600" height="820" fill="url(#xuantianBgGrad)"/>
+
+                        <!-- 北極七星旋轉星陣 -->
+                        <g transform="translate(300, 205)">
+                            <g opacity="0.3">
+                                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="55s" repeatCount="indefinite"/>
+                                <circle r="118" fill="none" stroke="#fef08a" stroke-width="2" stroke-dasharray="10,14"/>
+                                <circle cx="0" cy="-95" r="4" fill="#fde047"/>
+                                <circle cx="65" cy="-65" r="4" fill="#fde047"/>
+                                <circle cx="92" cy="15" r="4" fill="#fde047"/>
+                                <circle cx="45" cy="80" r="4" fill="#fde047"/>
+                                <circle cx="-45" cy="80" r="4" fill="#fde047"/>
+                                <circle cx="-92" cy="15" r="4" fill="#fde047"/>
+                                <circle cx="-65" cy="-65" r="4" fill="#fde047"/>
+                            </g>
+                            <circle r="130" fill="url(#xuantianStarGlow)" opacity="0.6">
+                                <animate attributeName="r" values="115;140;115" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+
+                        <!-- 武當仙山剪影 -->
+                        <path d="M0,285 Q150,225 300,268 T600,238 L600,340 L0,340 Z" fill="#1e293b" opacity="0.6"/>
+                        <path d="M0,305 Q210,255 390,295 T600,275 L600,350 L0,350 Z" fill="#0f172a" opacity="0.75"/>
+
+                        <!-- 飄動瑞雲 -->
+                        <g fill="#fef3c7" opacity="0.35">
+                            <path d="M40,140 Q60,120 90,135 Q115,115 140,135 Q165,135 160,155 L35,155 Z">
+                                <animateTransform attributeName="transform" type="translate" values="-15,0; 25,0; -15,0" dur="12s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M420,195 Q445,175 475,190 Q500,170 525,190 Q550,190 545,210 L415,210 Z">
+                                <animateTransform attributeName="transform" type="translate" values="20,0; -20,0; 20,0" dur="14s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+
+                        <!-- 雙線金框 -->
+                        <rect x="18" y="18" width="564" height="784" rx="16" fill="none" stroke="url(#xuantianGoldBorder)" stroke-width="3"/>
+                        <rect x="26" y="26" width="548" height="768" rx="12" fill="none" stroke="url(#xuantianGoldBorder)" stroke-width="1" stroke-dasharray="6,4"/>
+
+                        <!-- 頂部抬頭與問候/外交祝賀 -->
+                        <text id="svg-top-temple-tag" x="300" y="68" text-anchor="middle" fill="#fef3c7" font-family="'Noto Serif TC', serif" font-size="19" font-weight="700" letter-spacing="3">臺中明德宮天聖堂 · 北極玄天上帝</text>
+                        <text id="svg-greeting-title" x="300" y="122" text-anchor="middle" fill="#ffffff" font-family="'Noto Serif TC', serif" font-size="36" font-weight="900" letter-spacing="5">早安 · 正氣護身</text>
+                        <text id="svg-date-badge" x="300" y="156" text-anchor="middle" fill="#fef08a" font-family="'Noto Sans TC', sans-serif" font-size="16" font-weight="700" letter-spacing="2">玄天上帝真經 · 每日北極靈感籤</text>
+
+                        <!-- 中央宣紙籤卡區 -->
+                        <rect x="42" y="285" width="516" height="455" rx="14" fill="#fffbeb" fill-opacity="0.96" stroke="#d97706" stroke-width="2"/>
+
+                        <rect x="195" y="268" width="210" height="34" rx="17" fill="#0f172a" stroke="#fde68a" stroke-width="1.5"/>
+                        <text id="svg-lot-number" x="300" y="290" text-anchor="middle" fill="#fef3c7" font-family="'Noto Serif TC', serif" font-size="16" font-weight="700" letter-spacing="2">第 01 籤 · 百善孝先</text>
+
+                        <text x="300" y="335" text-anchor="middle" fill="#1e3a8a" font-family="'Noto Sans TC', sans-serif" font-size="14" font-weight="700" letter-spacing="2">【 玄天上帝真經 · 聖訓原文 】</text>
+                        <text id="svg-scripture-quote" x="300" y="370" text-anchor="middle" fill="#0f172a" font-family="'Noto Serif TC', serif" font-size="22" font-weight="900" letter-spacing="1">「世間萬善孝為先，孝順父母敬神天。」</text>
+                        <line x1="80" y1="392" x2="520" y2="392" stroke="#fcd34d" stroke-width="1.5"/>
+
+                        <text x="300" y="425" text-anchor="middle" fill="#b45309" font-family="'Noto Sans TC', sans-serif" font-size="14" font-weight="700" letter-spacing="2">【 帝爺公現代白話提點 】</text>
+                        <text id="svg-modern-quote" x="300" y="460" text-anchor="middle" fill="#1c1917" font-family="'Noto Serif TC', serif" font-size="21" font-weight="700"></text>
+
+                        <rect x="66" y="575" width="468" height="142" rx="10" fill="#f1f5f9" stroke="#3b82f6" stroke-width="1"/>
+                        <text x="300" y="603" text-anchor="middle" fill="#1e3a8a" font-family="'Noto Sans TC', sans-serif" font-size="15" font-weight="700" letter-spacing="1">🔥 今日鎮宅納福行動指引</text>
+                        <text id="svg-action-guide" x="300" y="633" text-anchor="middle" fill="#334155" font-family="'Noto Sans TC', sans-serif" font-size="16" font-weight="500"></text>
+
+                        <text x="300" y="772" text-anchor="middle" fill="#78350f" font-family="'Noto Sans TC', sans-serif" font-size="14" font-weight="700" letter-spacing="1">願 北極玄天上帝 威靈護佑 · 諸邪退散 · 闔家平安</text>
+                    </svg>
+                </div>
+
+                <!-- 籤卡下方操作按鈕列 -->
+                <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+                    <button id="share-image-btn" onclick="shareMorningCardImage()" class="bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition flex items-center space-x-2 text-sm">
+                        <span>📤</span>
+                        <span id="share-img-btn-text">直接分享正氣圖卡</span>
+                    </button>
+                    <button onclick="downloadMorningCardPng()" class="bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold px-5 py-2.5 rounded-xl shadow transition flex items-center space-x-2 text-sm">
+                        <span>📥</span>
+                        <span id="download-btn-text">下載籤卡圖檔</span>
+                    </button>
+                    <button onclick="copyOracleText()" class="bg-stone-800 hover:bg-stone-700 active:scale-95 text-amber-100 font-medium px-4 py-2.5 rounded-xl shadow transition flex items-center space-x-2 text-sm">
+                        <span>📋</span>
+                        <span id="copy-text-btn-label">複製祝福文字</span>
+                    </button>
+                    <button onclick="drawXuantianLot()" class="bg-white hover:bg-slate-100 active:scale-95 text-slate-950 border border-slate-900/30 font-medium px-4 py-2.5 rounded-xl transition text-sm">🔄 再求一籤</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 經文主體區 -->
+        <div id="scripture-content" class="bg-white rounded-2xl shadow-lg border border-slate-300/70 p-6 md:p-14 space-y-12">
+
+            <!-- 1. 虔誠稟告文式 -->
+            <section class="avoid-break space-y-6">
+                <div class="border-b-2 border-slate-900 pb-3 text-center">
+                    <h3 class="serif-font text-2xl md:text-3xl font-bold text-slate-950">誦經稟告文式</h3>
+                </div>
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-4 text-center">
+                    <p class="font-bold text-slate-950 text-2xl md:text-3xl py-1"><ruby>恭<rt>ㄍㄨㄥ</rt></ruby><ruby>維<rt>ㄨㄟˊ</rt></ruby></p>
+                    <p>北極鎮天真武玄天上帝，七星<ruby>寶<rt>ㄅㄠˇ</rt></ruby><ruby>劍<rt>ㄐㄧㄢˋ</rt></ruby>伏邪魔，<ruby>龜<rt>ㄍㄨㄟ</rt></ruby><ruby>蛇<rt>ㄕㄜˊ</rt></ruby>二將護蒼生。</p>
+                    <div class="pt-2 text-center leading-relaxed">
+                        <p class="inline-block" data-tts-pause="2500">弟子<span class="text-stone-400 font-bold mx-1 tts-ignore">〇〇（請默念姓名）</span></p>
+                        <p class="inline-block" data-tts-pause="2500">，於<span id="lunar-date-text" class="text-indigo-900 font-bold mx-1">〇年〇月〇日</span>，敬為<span class="text-stone-400 font-bold mx-1 tts-ignore">報答親恩、祈求闔家安康（請默念祈願）</span>，</p>
+                    </div>
+                    <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby><ruby>誠<rt>ㄔㄥˊ</rt></ruby><ruby>焚<rt>ㄈㄣˊ</rt></ruby><ruby>香<rt>ㄒㄧㄤ</rt></ruby><ruby>恭<rt>ㄍㄨㄥ</rt></ruby><ruby>誦<rt>ㄙㄨㄥˋ</rt></ruby>《玄天上帝說報父母恩重經》，<ruby>仰<rt>ㄧㄤˇ</rt></ruby><ruby>祈<rt>ㄑㄧˊ</rt></ruby>上帝威靈護佑，消災解<ruby>厄<rt>ㄜˋ</rt></ruby>，父母延年。</p>
+                </div>
+            </section>
+
+            <!-- 2. 淨神咒集 -->
+            <section id="sec-jingshen" class="avoid-break space-y-6 pt-6 border-t border-stone-200 scroll-mt-24">
+                <div class="border-b-2 border-slate-900 pb-3 text-center">
+                    <h3 class="serif-font text-2xl md:text-3xl font-bold text-slate-950">淨神咒集</h3>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-slate-100/80 p-5 rounded-xl border border-slate-300 text-center serif-font space-y-2">
+                        <h4 class="font-bold text-slate-900">【 淨心神咒 】</h4>
+                        <p>太上台星，應變無停。驅邪<ruby>縛<rt>ㄈㄨˊ</rt></ruby><ruby>魅<rt>ㄇㄟˋ</rt></ruby>，保命護身。智慧明淨，心神安寧。三魂永久，魄無喪傾。急急如律令。</p>
+                    </div>
+                    <div class="bg-slate-100/80 p-5 rounded-xl border border-slate-300 text-center serif-font space-y-2">
+                        <h4 class="font-bold text-slate-900">【 淨口神咒 】</h4>
+                        <p>丹朱口神，吐<ruby>穢<rt>ㄏㄨㄟˋ</rt></ruby>除<ruby>氛<rt>ㄈㄣ</rt></ruby>。舌神正倫，通命養神。羅千齒神，卻邪衛真。喉神虎<ruby>賁<rt>ㄅㄣ</rt></ruby>，氣神引津。心神丹元，令我通真。思神<ruby>鍊<rt>ㄌㄧㄢˋ</rt></ruby>液，道氣常存。急急如律令。</p>
+                    </div>
+                    <div class="bg-slate-100/80 p-5 rounded-xl border border-slate-300 text-center serif-font space-y-2">
+                        <h4 class="font-bold text-slate-900">【 淨身神咒 】</h4>
+                        <p>靈寶天尊，安慰身形。弟子魂魄，五臟玄冥。青龍白虎，隊仗紛紜。朱雀玄武，侍衛我身。急急如律令。</p>
+                    </div>
+                    <div class="bg-slate-100/80 p-5 rounded-xl border border-slate-300 text-center serif-font space-y-2">
+                        <h4 class="font-bold text-slate-900">【 安神咒 】</h4>
+                        <p>元始安鎮，普告萬靈。<ruby>嶽<rt>ㄩㄝˋ</rt></ruby><ruby>瀆<rt>ㄉㄨˊ</rt></ruby>真官，上下<ruby>祇<rt>ㄑㄧˊ</rt></ruby>神。左社右<ruby>稷<rt>ㄐㄧ</rt></ruby>，不得妄驚。回向正道，內外澄清。各安方位，備守壇庭。太上有命，搜捕邪精。護法神王，保衛誦經。皈依大道，元亨利貞。急急如律令。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 北極玄天上帝寶誥 -->
+            <section id="sec-baogao" class="avoid-break space-y-6 pt-6 border-t border-stone-200 scroll-mt-24">
+                <div class="border-b-2 border-slate-900 pb-3 text-center">
+                    <h3 class="serif-font text-2xl md:text-3xl font-bold text-slate-950">北極玄天上帝寶誥</h3>
+                    <p class="text-sm text-stone-500 mt-1">（志心皈命禮 · 三稱）</p>
+                </div>
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-3 text-center" data-repeat="3">
+                    <p class="font-black text-slate-950 text-2xl md:text-3xl tracking-wide mb-2">志心皈命禮</p>
+                    <p>混元六天，傳法教主。修真悟道，濟度群迷。</p>
+                    <p>普為眾生，消除災障。八十二化，三教祖師。</p>
+                    <p>大慈大悲，救苦救難。三元都總管，九天遊<ruby>奕<rt>ㄧˋ</rt></ruby>使。</p>
+                    <p>左天罡北極，右<ruby>垣<rt>ㄩㄢˊ</rt></ruby>大將軍。鎮天助順，真武靈應，福德衍慶，仁慈正烈。</p>
+                    <p>協運真君，治世福神，玉虛師相，玄天上帝，金<ruby>闕<rt>ㄑㄩㄝˋ</rt></ruby>化身，蕩魔天尊。</p>
+                </div>
+            </section>
+
+            <!-- 4. 開經偈與玄天上帝說報父母恩重經正文 -->
+            <section id="sec-main-scripture" class="space-y-8 pt-6 border-t border-stone-200 scroll-mt-24">
+                <div class="p-6 md:p-8 bg-amber-50/90 rounded-xl border border-amber-300 text-center avoid-break">
+                    <h4 class="font-bold text-slate-900 text-xl md:text-2xl mb-4">開經偈</h4>
+                    <div class="serif-font text-xl md:text-2xl leading-relaxed space-y-2">
+                        <p>北極真武大天尊，武當修道感親恩。</p>
+                        <p>特頒孝經垂萬世，報答父母恩情深。</p>
+                    </div>
+                </div>
+
+                <!-- 經文主體標題（循環模式起點） -->
+                <div class="border-b-2 border-slate-900 pb-4 text-center">
+                    <p class="text-sm md:text-base text-stone-500 mb-1">（第二遍起循環敬誦處）</p>
+                    <h3 class="serif-font text-3xl md:text-4xl font-black text-slate-950" data-loop-start="true">玄天上帝說報父母恩重經</h3>
+                </div>
+
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-6 text-justify">
+                    <p class="indent-[2em]">
+                        爾時，玄天上帝居於武當山紫霄宮中，與諸天仙眾、五雷神將、四海龍王，演說無上妙法。是時上帝觀見下界凡民，多有迷失本性，忘卻父母生養深恩，不孝不敬，逆天違理，致遭災厄。上帝大發慈悲，乃宣說《報父母恩重經》，警醒世人。
+                    </p>
+                    <p class="indent-[2em]">
+                        上帝曰：天地之間，惟人最貴；人倫之首，莫大於孝。哀哀父母，生我<ruby>劬<rt>ㄑㄩˊ</rt></ruby><ruby>勞<rt>ㄌㄠˊ</rt></ruby>！十月懷胎，母身<ruby>羸<rt>ㄌㄟˊ</rt></ruby>弱，行住坐臥，時時憂心；臨產之日，痛如刀割，九死一生，方得兒身。既生之後，乳<ruby>哺<rt>ㄅㄨˇ</rt></ruby>三年，推乾就濕，咽苦吐甘，寒則加衣，飢則餵食，夜不成眠，日無片刻安閒。及至成人，教以禮義，為謀婚嫁，操心勞力，白髮添霜。父母之恩，昊天罔極，縱使粉身碎骨，亦難報答萬一。
+                    </p>
+                    <p class="indent-[2em]">
+                        世間之人，若能知恩報本，孝順父母，晨昏問安，冬溫夏清，生前善體親心，誠心奉養，不使父母憂愁煩惱；父母百年之後，慎終追遠，行善積德以薦拔親靈者，即是人間大孝之子。天地神明咸皆欽敬，諸邪遠避，吉星常照，必獲福壽綿長，子孫亦必賢孝昌盛。
+                    </p>
+                    <p class="indent-[2em]">
+                        若有善男信女，每逢父母生辰、忌日，或玄天上帝聖誕（三月初三）、初一十五，焚香淨手，虔誠恭誦此《玄天上帝說報父母恩重經》者，在生父母則消災延壽、身心康泰；過去父母與九玄七祖，則蒙真武慈光接引，超生善道，離苦得樂。
+                    </p>
+                </div>
+
+                <!-- 真武報親讚偈 -->
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-3 text-center bg-slate-100/80 p-6 md:p-8 rounded-xl border border-slate-300">
+                    <h4 class="font-bold text-slate-900 text-xl md:text-2xl mb-3">真武報親讚偈</h4>
+                    <p>世間萬善孝為先，孝順父母敬神天。</p>
+                    <p>十月懷胎恩難報，三年乳哺情無邊。</p>
+                    <p>在生供養須盡力，莫待親亡空祭前。</p>
+                    <p>虔誦真武報親經，父母延年福壽全。</p>
+                </div>
+
+                <div class="text-center pt-2">
+                    <p class="serif-font font-black text-2xl md:text-3xl text-slate-950">玄天上帝說報父母恩重經（終）</p>
+                </div>
+            </section>
+
+            <!-- 5. 收經讚與回向偈 -->
+            <section id="sec-huixiang" class="p-8 bg-slate-950 text-amber-50 rounded-xl text-center avoid-break serif-font space-y-6 scroll-mt-24">
+                <div class="space-y-3">
+                    <h4 class="font-bold text-2xl md:text-3xl text-amber-300">收經讚</h4>
+                    <p class="text-xl md:text-2xl leading-relaxed">北極玄天，威鎮九天。七星寶劍護人間，孝經永流傳。十方友宮，共沐真武恩。</p>
+                    <div data-repeat="3">
+                        <p class="font-black text-2xl md:text-3xl text-amber-300 pt-2">北極鎮天真武玄天上帝蕩魔大天尊<span class="text-lg md:text-xl text-amber-400 font-normal">（三稱）</span></p>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-6 space-y-5 text-left md:text-center">
+                    <div>
+                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向偈（一）</h5>
+                        <p>願以此功德，普及於一切。我等與眾生，皆共成佛道。</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向偈（二）</h5>
+                        <p>誦經功德殊勝行，無邊勝福皆回向。祈願堂上父母健，過往先靈早超昇。十方友宮香火盛，道誼長存永吉祥。</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="no-print bg-stone-900 text-stone-400 py-7 px-4 text-center text-sm border-t border-stone-800 space-y-2.5 pb-24 md:pb-8">
+        <p class="text-stone-200 font-bold">《玄天上帝真經》數位共修結緣 PWA 獨立版</p>
+        <p class="text-xs text-stone-400">臺中明德宮天聖堂（三曹對案直轄鸞堂）鸞生 黃國豐製作 · 敬獻全台友宮與十方信眾免費恭誦。</p>
+        <p class="pt-1"><a href="https://taichungmingdetemple.github.io/fortune/" target="_blank" rel="noopener noreferrer" class="inline-block text-amber-400 hover:text-amber-300 underline underline-offset-4 text-xs transition">🏮 認識臺中明德宮（三曹對案直轄鸞堂）與 AI 科技化宮廟介紹 ➔</a></p>
+        <div class="pt-3 mt-2 border-t border-stone-800/90 max-w-2xl mx-auto space-y-1">
+            <p class="text-xs text-amber-300/90 font-bold tracking-wide">© 2026 臺中明德宮鸞生 黃國豐 版權所有 · 保留一切權利</p>
+        </div>
+    </footer>
+
+    <!-- 友宮外交分享與專屬致贈連結產生器彈窗 -->
+    <div id="share-modal" class="no-print hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeShareModal()">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-slate-700 space-y-4 relative">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100">✕</button>
+
+            <div class="text-center space-y-1">
+                <span class="inline-block bg-slate-200 text-slate-900 text-xs font-bold px-3 py-1 rounded-full">友宮外交 · 廣結善緣</span>
+                <h3 class="serif-font text-2xl font-black text-slate-950 pt-1">致贈《玄天上帝真經》結緣本</h3>
+                <p class="text-xs text-stone-500">可輸入友宮宮名，自動產生專屬致贈賀詞與連結</p>
+            </div>
+
+            <div class="bg-slate-100 border border-slate-300 rounded-xl p-3 space-y-1.5">
+                <label for="friend-temple-input" class="block text-xs font-bold text-slate-950">🏮 輸入受贈友宮宮名（選填，留白則為通用版）：</label>
+                <input type="text" id="friend-temple-input" oninput="updateCustomShareMessage()" placeholder="例如：松柏嶺受天宮、下營北極殿玄天上帝廟..." class="w-full bg-white border border-slate-400 rounded-lg px-3 py-1.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-slate-700">
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-sm text-stone-700 space-y-1.5">
+                <p class="font-bold text-slate-950 text-xs">📋 結緣分享敬語預覽：</p>
+                <textarea id="share-message-box" rows="4" readonly class="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-stone-700 leading-relaxed focus:outline-none resize-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <a id="line-share-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-[#06C755] hover:bg-[#05b34c] active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>💬</span><span>分享至 LINE</span>
+                </a>
+                <button type="button" onclick="shareToInstagram()" class="bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] hover:opacity-95 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>📸</span><span>分享至 IG</span>
+                </button>
+                <a id="email-share-link" href="#" class="bg-sky-700 hover:bg-sky-600 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>✉️</span><span>E-mail 寄送</span>
+                </a>
+                <button onclick="copyShareText()" id="copy-share-btn" class="bg-slate-900 hover:bg-slate-800 active:scale-95 text-amber-100 font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>📋</span><span id="copy-share-text">複製結緣連結</span>
+                </button>
+            </div>
+            <p id="share-modal-toast" class="hidden text-center text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg py-2 px-3"></p>
+        </div>
+    </div>
+
+    <!-- 重置計次確認彈窗 -->
+    <div id="reset-counter-modal" class="no-print hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeResetCounterModal()">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-2 border-slate-500 space-y-4 text-center">
+            <h3 class="serif-font text-xl font-black text-slate-950">重設誦經計次紀錄</h3>
+            <div class="flex flex-col gap-2 pt-1">
+                <button onclick="resetChantCount('today')" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-sm transition">僅歸零「今日已誦」遍數</button>
+                <button onclick="resetChantCount('all')" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition">全部歸零（包含累計總數）</button>
+                <button onclick="closeResetCounterModal()" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium py-2 rounded-xl text-xs transition">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 安裝至桌面說明彈窗 -->
+    <div id="install-modal" class="no-print hidden fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeInstallModal()">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-slate-600 space-y-4 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeInstallModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100">✕</button>
+            <div class="text-center space-y-1">
+                <span class="inline-block bg-slate-200 text-slate-950 text-xs font-bold px-3 py-1 rounded-full">PWA 獨立應用 · 離線隨身恭誦</span>
+                <h3 class="serif-font text-2xl font-black text-slate-950 pt-1">安裝《玄天上帝真經》至手機桌面</h3>
+            </div>
+            <div id="android-native-install-box" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-center">
+                <button type="button" onclick="triggerNativeInstallPrompt()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm shadow transition">⚡ 立即一鍵安裝到手機桌面</button>
+            </div>
+            <div class="bg-slate-100 border border-slate-300 rounded-xl p-4 space-y-2 text-xs text-stone-700">
+                <div class="font-bold text-slate-950 text-sm">🤖 Android 安卓手機（Chrome）</div>
+                <p>點擊右上角「⋮」選單 ➔ 點選「安裝應用程式」或「加到主畫面」即可。</p>
+            </div>
+            <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 space-y-2 text-xs text-stone-700">
+                <div class="font-bold text-slate-950 text-sm">🍎 iPhone / iPad（Safari）</div>
+                <p>點擊下方「分享（⬆️）」圖示 ➔ 選擇「加入主畫面」➔ 點擊「新增」即可。</p>
+            </div>
+            <button type="button" onclick="closeInstallModal()" class="w-full bg-slate-950 hover:bg-slate-900 text-amber-100 font-bold py-2.5 rounded-xl text-sm transition">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 0. 友宮外交 URL 參數 (?to=友宮名稱) 初始化 ---
+        let targetFriendTemple = "";
+        (function initDiplomaticParams() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const toParam = (params.get('to') || '').trim();
+                if (toParam) {
+                    targetFriendTemple = toParam;
+                    const banner = document.getElementById('top-diplomatic-banner');
+                    const giftCard = document.getElementById('diplomatic-gift-card');
+                    const giftHeading = document.getElementById('diplomatic-temple-heading');
+                    const svgTopTag = document.getElementById('svg-top-temple-tag');
+                    if (banner) {
+                        banner.innerHTML = `🏮 臺中明德宮天聖堂 敬賀 <span class="text-white underline decoration-amber-300 underline-offset-4">【${toParam}】</span> 威靈顯赫 · 恭獻《玄天上帝真經》共修結緣 ⚔️`;
+                    }
+                    if (giftCard) giftCard.classList.remove('hidden');
+                    if (giftHeading) giftHeading.textContent = `敬賀【${toParam}】威靈顯赫 · 香火鼎盛`;
+                    if (svgTopTag) {
+                        svgTopTag.textContent = `臺中明德宮天聖堂 敬賀【${toParam}】`;
+                        if (toParam.length > 8) svgTopTag.setAttribute('font-size', '16');
+                    }
+                }
+            } catch (e) {}
+        })();
+
+        // --- 防偷窺安全防護 ---
+        let antiInspectLocked = false;
+        function triggerAntiInspectLock() {
+            if (antiInspectLocked) return;
+            antiInspectLocked = true;
+            if (typeof isSpeaking !== 'undefined' && isSpeaking) { try { stopSpeech(); } catch (e) {} }
+            document.getElementById('antiInspectOverlay')?.classList.remove('hidden');
+        }
+        function attemptUnlockAntiInspect() {
+            const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
+            const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
+            if (widthDiff > 320 || heightDiff > 260) return;
+            antiInspectLocked = false;
+            document.getElementById('antiInspectOverlay')?.classList.add('hidden');
+        }
+        function handleContextMenuGuard(e) {
+            const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
+            e.preventDefault();
+            return false;
+        }
+        document.addEventListener('keydown', function (e) {
+            const key = (e.key || '').toUpperCase();
+            if (key === 'F12' || e.keyCode === 123 || ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'J', 'C', 'K'].includes(key)) || ((e.ctrlKey || e.metaKey) && !e.shiftKey && ['U', 'S'].includes(key))) {
+                e.preventDefault();
+                triggerAntiInspectLock();
+            }
+        }, true);
+
+        // --- 懸浮設定面板與拖曳 ---
+        function clampFloatingContainerToViewport() {
+            const container = document.getElementById('floating-control-container');
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            const pad = 8;
+            const minTop = Math.max(pad, (document.getElementById('main-top-header')?.offsetHeight || 0) + 6);
+            let nextLeft = Math.min(Math.max(pad, rect.left), Math.max(pad, window.innerWidth - rect.width - pad));
+            let nextTop = Math.min(Math.max(minTop, rect.top), Math.max(minTop, window.innerHeight - rect.height - pad));
+            container.style.right = 'auto'; container.style.bottom = 'auto';
+            container.style.left = nextLeft + 'px'; container.style.top = nextTop + 'px';
+            container.classList.toggle('items-start', nextLeft + rect.width / 2 < window.innerWidth / 2);
+            container.classList.toggle('items-end', nextLeft + rect.width / 2 >= window.innerWidth / 2);
+        }
+
+        function toggleTtsSettings() {
+            const panel = document.getElementById('tts-settings-panel');
+            const container = document.getElementById('floating-control-container');
+            const bar = document.getElementById('floating-tts-bar');
+            if (!panel) return;
+            const willOpen = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden');
+            if (willOpen && container && bar) {
+                if (bar.getBoundingClientRect().top < window.innerHeight * 0.45) container.insertBefore(bar, panel);
+                else container.insertBefore(panel, bar);
+                requestAnimationFrame(clampFloatingContainerToViewport);
+            }
+        }
+
+        document.addEventListener('pointerdown', function(e) {
+            const panel = document.getElementById('tts-settings-panel');
+            const container = document.getElementById('floating-control-container');
+            if (panel && !panel.classList.contains('hidden') && container && !container.contains(e.target)) {
+                panel.classList.add('hidden');
+            }
+        });
+
+        (function initDraggableFloatingControl() {
+            const container = document.getElementById('floating-control-container');
+            const dragHandle = document.getElementById('floating-tts-bar');
+            const panelHeaderHandle = document.getElementById('tts-settings-header');
+            if (!container || !dragHandle) return;
+            let isDragging = false, hasMoved = false, startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+            function onDragStart(e) {
+                if (e.target && e.target.closest('button')) return;
+                const point = e.touches ? e.touches[0] : e;
+                startX = point.clientX; startY = point.clientY;
+                const rect = container.getBoundingClientRect();
+                initialLeft = rect.left; initialTop = rect.top;
+                isDragging = true; hasMoved = false;
+            }
+            function onDragMove(e) {
+                if (!isDragging) return;
+                const point = e.touches ? e.touches[0] : e;
+                const dx = point.clientX - startX, dy = point.clientY - startY;
+                if (!hasMoved && Math.hypot(dx, dy) < 5) return;
+                hasMoved = true;
+                if (e.cancelable) e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const minTop = Math.max(8, (document.getElementById('main-top-header')?.offsetHeight || 0) + 6);
+                const nextLeft = Math.min(Math.max(8, initialLeft + dx), Math.max(8, window.innerWidth - rect.width - 8));
+                const nextTop = Math.min(Math.max(minTop, initialTop + dy), Math.max(minTop, window.innerHeight - rect.height - 8));
+                container.style.right = 'auto'; container.style.bottom = 'auto';
+                container.style.left = nextLeft + 'px'; container.style.top = nextTop + 'px';
+            }
+            function onDragEnd() { isDragging = false; }
+            container.addEventListener('click', function(e) { if (hasMoved) { e.stopPropagation(); e.preventDefault(); hasMoved = false; } }, true);
+            [dragHandle, panelHeaderHandle].forEach(h => { if (h) { h.addEventListener('mousedown', onDragStart); h.addEventListener('touchstart', onDragStart, { passive: true }); } });
+            window.addEventListener('mousemove', onDragMove); window.addEventListener('mouseup', onDragEnd);
+            window.addEventListener('touchmove', onDragMove, { passive: false }); window.addEventListener('touchend', onDragEnd);
+        })();
+
+        // --- PWA 初始化（固定指向正式路徑） ---
+        const CANONICAL_SCRIPTURE_URL = 'https://taichungmingdetemple.github.io/mingde/mingde_xuantian.html';
+
+        (function initStandalonePWA() {
+            try {
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#0f172a"/><rect x="24" y="24" width="464" height="464" rx="76" fill="none" stroke="#f59e0b" stroke-width="12"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-weight="bold" font-size="250" fill="#fde68a">玄</text></svg>`;
+                const iconDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+                const appleIconLink = document.getElementById('apple-touch-icon-link');
+                if (appleIconLink) appleIconLink.href = iconDataUri;
+                const manifestObj = { name: "玄天上帝真經｜臺中明德宮天聖堂結緣版", short_name: "玄天上帝真經", start_url: CANONICAL_SCRIPTURE_URL, scope: "./", display: "standalone", background_color: "#f8fafc", theme_color: "#0f172a", icons: [{ src: iconDataUri, sizes: "192x192 512x512", type: "image/svg+xml", purpose: "any maskable" }] };
+                const manifestLink = document.getElementById('inline-manifest');
+                if (manifestLink) manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
+            } catch (err) {}
+        })();
+
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstallPrompt = e; document.getElementById('android-native-install-box')?.classList.remove('hidden'); });
+        function openInstallModal() { document.getElementById('install-modal')?.classList.remove('hidden'); }
+        function closeInstallModal() { document.getElementById('install-modal')?.classList.add('hidden'); }
+        async function triggerNativeInstallPrompt() { if (!deferredInstallPrompt) return; deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt = null; closeInstallModal(); }
+
+        // --- 誦經計次管理 ---
+        const CHANT_STORAGE_KEY = 'xuantian_scripture_chant_stats_v1';
+        let chantStats = { date: new Date().toISOString().slice(0, 10), today: 0, total: 0 };
+        function loadChantStats() {
+            try {
+                const raw = window.localStorage.getItem(CHANT_STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    chantStats.total = Number(parsed.total) || 0;
+                    chantStats.today = (parsed.date === todayStr) ? (Number(parsed.today) || 0) : 0;
+                    chantStats.date = todayStr;
+                }
+            } catch (e) {}
+            renderChantStats();
+        }
+        function saveChantStats() { try { window.localStorage.setItem(CHANT_STORAGE_KEY, JSON.stringify(chantStats)); } catch (e) {} }
+        function renderChantStats() {
+            document.getElementById('today-chant-count').innerText = chantStats.today;
+            document.getElementById('total-chant-count').innerText = chantStats.total;
+        }
+        function incrementChantCount(step = 1) {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            if (chantStats.date !== todayStr) { chantStats.date = todayStr; chantStats.today = 0; }
+            chantStats.today += step; chantStats.total += step;
+            saveChantStats(); renderChantStats();
+        }
+        function openResetCounterModal() { document.getElementById('reset-counter-modal')?.classList.remove('hidden'); }
+        function closeResetCounterModal() { document.getElementById('reset-counter-modal')?.classList.add('hidden'); }
+        function resetChantCount(mode) { chantStats.today = 0; if (mode === 'all') chantStats.total = 0; saveChantStats(); renderChantStats(); closeResetCounterModal(); }
+        loadChantStats();
+
+        // --- 友宮外交分享結緣功能 ---
+        function getSharePayload() {
+            const inputVal = (document.getElementById('friend-temple-input')?.value || targetFriendTemple || '').trim();
+            const shareUrl = inputVal ? `${CANONICAL_SCRIPTURE_URL}?to=${encodeURIComponent(inputVal)}` : CANONICAL_SCRIPTURE_URL;
+            const templeGreeting = inputVal ? `敬賀【${inputVal}】威靈顯赫、香火鼎盛！\n` : '';
+            const shareTitle = inputVal
+                ? `臺中明德宮天聖堂 敬賀【${inputVal}】《玄天上帝真經》結緣本`
+                : '《玄天上帝真經》｜臺中明德宮天聖堂 · 友宮共修結緣版';
+            const shareMessageOnly = `${templeGreeting}臺中明德宮天聖堂（三曹對案直轄鸞堂）謹製《玄天上帝真經》數位共修結緣本，附全字注音、語音帶讀與帝爺公靈感求籤，敬獻貴宮與十方善信共修結緣：`;
+            const fullShareText = `${shareMessageOnly}\n${shareUrl}`;
+            return { shareUrl, shareTitle, fullShareText };
+        }
+
+        function updateCustomShareMessage() {
+            const { shareTitle, fullShareText } = getSharePayload();
+            const msgBox = document.getElementById('share-message-box');
+            const lineLink = document.getElementById('line-share-link');
+            const emailLink = document.getElementById('email-share-link');
+            if (msgBox) msgBox.value = fullShareText;
+            if (lineLink) lineLink.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(fullShareText);
+            if (emailLink) emailLink.href = `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(fullShareText)}`;
+        }
+
+        function shareScripture() {
+            const inputEl = document.getElementById('friend-temple-input');
+            if (inputEl && !inputEl.value && targetFriendTemple) inputEl.value = targetFriendTemple;
+            document.getElementById('share-modal-toast')?.classList.add('hidden');
+            updateCustomShareMessage();
+            document.getElementById('share-modal')?.classList.remove('hidden');
+        }
+        function closeShareModal() { document.getElementById('share-modal')?.classList.add('hidden'); }
+
+        function shareToInstagram() {
+            copyShareText(true);
+            const toastEl = document.getElementById('share-modal-toast');
+            if (toastEl) {
+                toastEl.textContent = '📸 已複製結緣敬語與專屬連結！即將開啟 Instagram，可直接貼上分享。';
+                toastEl.classList.remove('hidden');
+            }
+            setTimeout(() => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer'), 600);
+        }
+
+        function copyShareText(silent = false) {
+            const { fullShareText } = getSharePayload();
+            const btnText = document.getElementById('copy-share-text');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(fullShareText).then(() => {
+                    if (!silent && btnText) { btnText.innerText = '✅ 已複製敬語與網址'; setTimeout(() => { btnText.innerText = '複製結緣連結'; }, 2500); }
+                });
+            }
+        }
+
+        // --- 字體縮放與注音開關 ---
+        let currentFontScale = 1.0;
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(1.75, Math.max(0.85, Math.round((currentFontScale + delta) * 100) / 100));
+            document.getElementById('scripture-content').style.setProperty('--font-scale', currentFontScale);
+            document.getElementById('font-size-label').innerText = Math.round(currentFontScale * 100) + '%';
+        }
+        let isZhuyinVisible = true;
+        function toggleZhuyin() {
+            const el = document.getElementById('scripture-content');
+            const statusText = document.getElementById('zhuyin-status-text');
+            el.classList.toggle('hide-zhuyin', isZhuyinVisible);
+            if (statusText) statusText.innerText = isZhuyinVisible ? '注音：已隱藏' : '注音：顯示中';
+            isZhuyinVisible = !isZhuyinVisible;
+        }
+
+        // --- 語音朗讀引擎 ---
+        let synth = window.speechSynthesis, voices = [];
+        function populateVoices() {
+            voices = synth.getVoices();
+            const voiceSelect = document.getElementById('voice-select');
+            if (!voiceSelect || (voices.length > 0 && voiceSelect.options.length > 1)) return;
+            if (voices.length > 0) {
+                voiceSelect.innerHTML = '';
+                let zhVoices = voices.filter(v => v.lang.includes('zh'));
+                if (zhVoices.length === 0) zhVoices = voices;
+                zhVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.value = voices.indexOf(voice);
+                    if (voice.lang === 'zh-TW' || voice.lang === 'zh-HK') option.selected = true;
+                    voiceSelect.appendChild(option);
+                });
+            }
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = populateVoices;
+        populateVoices(); setTimeout(populateVoices, 500);
+        document.getElementById('rate-select').addEventListener('input', e => document.getElementById('rate-display').innerText = parseFloat(e.target.value).toFixed(2));
+
+        let isSpeaking = false, isPaused = false, originalChunks = [], currentChunkIndex = 0, activeHighlightElement = null, loopCount = 0, lastLoopTime = 0, speakCallTime = 0;
+        function clearHighlight() { if (activeHighlightElement) { activeHighlightElement.classList.remove('reading-highlight'); activeHighlightElement = null; } }
+        function updateTtsUI() {
+            const btnText = document.getElementById('tts-btn-text'), iconPlay = document.getElementById('tts-icon-play'), iconPause = document.getElementById('tts-icon-pause'), stopBtn = document.getElementById('tts-stop-btn');
+            const fStop = document.getElementById('floating-stop-btn'), fIcon = document.getElementById('floating-tts-icon'), fText = document.getElementById('floating-tts-text');
+            if (!isSpeaking) {
+                btnText.innerText = '語音朗讀'; iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden'); stopBtn.classList.add('hidden'); fStop.classList.add('hidden'); fIcon.innerText = '▶️'; fText.innerText = '語音朗讀';
+            } else if (isPaused) {
+                btnText.innerText = '繼續朗讀'; iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden'); stopBtn.classList.remove('hidden'); fStop.classList.remove('hidden'); fIcon.innerText = '▶️'; fText.innerText = '繼續朗讀';
+            } else {
+                btnText.innerText = '暫停朗讀'; iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden'); stopBtn.classList.remove('hidden'); fStop.classList.remove('hidden'); fIcon.innerText = '⏸️'; fText.innerText = '暫停朗讀';
+            }
+        }
+        function stopSpeech() { isSpeaking = false; isPaused = false; updateTtsUI(); synth.cancel(); clearHighlight(); currentChunkIndex = 0; loopCount = 0; document.getElementById('loop-counter-badge').classList.add('hidden'); }
+        function toggleSpeech() {
+            if (isSpeaking) { if (isPaused) { isPaused = false; updateTtsUI(); speakNextChunk(); } else { isPaused = true; updateTtsUI(); synth.cancel(); } return; }
+            document.getElementById('tts-settings-panel')?.classList.add('hidden');
+            const scriptureContent = document.getElementById('scripture-content');
+            function extractNodes(node) {
+                let extracted = [];
+                function walk(n) {
+                    if (n.nodeType === 1 && n.matches('.text-stone-500, rt, .text-xs, .no-print, .hide-zhuyin, .tts-ignore')) return;
+                    let repeats = n.nodeType === 1 && n.hasAttribute('data-repeat') ? (parseInt(n.getAttribute('data-repeat')) || 1) : 1;
+                    if (n.nodeType === 1 && ['H3', 'H4', 'H5', 'P'].includes(n.tagName)) {
+                        let clone = n.cloneNode(true);
+                        clone.querySelectorAll('.text-stone-500, rt, .text-xs, .tts-ignore').forEach(el => el.remove());
+                        let text = clone.textContent.replace(/\s+/g, ' ').trim().replace(/（三稱）/g, '').replace(/（三遍）/g, '').replace(/三遍/g, '');
+                        if (text) { for (let i = 0; i < repeats; i++) extracted.push({ element: n, text: text }); }
+                        return;
+                    }
+                    if (repeats > 1 && !['H3', 'H4', 'H5', 'P'].includes(n.tagName)) {
+                        let blockExtracted = [], oldExtracted = extracted; extracted = blockExtracted;
+                        for (let child of n.childNodes) if (child.nodeType === 1 || child.nodeType === 3) walk(child);
+                        extracted = oldExtracted;
+                        for (let i = 0; i < repeats; i++) extracted.push(...blockExtracted);
+                        return;
+                    }
+                    for (let child of n.childNodes) if (child.nodeType === 1 || child.nodeType === 3) walk(child);
+                }
+                walk(scriptureContent); return extracted;
+            }
+            originalChunks = extractNodes(scriptureContent);
+            if (originalChunks.length > 0) {
+                isSpeaking = true; isPaused = false; loopCount = 1;
+                document.getElementById('loop-count-text').innerText = loopCount;
+                document.getElementById('loop-counter-badge').classList.remove('hidden');
+                lastLoopTime = Date.now(); updateTtsUI(); synth.cancel();
+                setTimeout(() => { currentChunkIndex = 0; speakNextChunk(); }, 100);
+            }
+        }
+        function speakNextChunk() {
+            if (!isSpeaking || isPaused) return;
+            if (currentChunkIndex >= originalChunks.length) {
+                incrementChantCount(1);
+                const loopCheckbox = document.getElementById('loop-mode-cb');
+                const targetLimit = parseInt(document.getElementById('loop-target-select')?.value || '0', 10);
+                if (loopCheckbox && loopCheckbox.checked && (targetLimit === 0 || loopCount < targetLimit)) {
+                    let loopStartIndex = originalChunks.findIndex(c => c.element.hasAttribute('data-loop-start'));
+                    if (loopStartIndex !== -1 && Date.now() - lastLoopTime > 5000) {
+                        currentChunkIndex = loopStartIndex; clearHighlight(); loopCount++;
+                        document.getElementById('loop-count-text').innerText = loopCount; lastLoopTime = Date.now();
+                        setTimeout(() => { if (isSpeaking && !isPaused) speakNextChunk(); }, 2500);
+                        return;
+                    }
+                }
+                stopSpeech(); return;
+            }
+            const chunk = originalChunks[currentChunkIndex];
+            let utterance = new SpeechSynthesisUtterance(chunk.text);
+            let idx = document.getElementById('voice-select').value;
+            if (idx !== "" && voices[idx]) utterance.voice = voices[idx]; else utterance.lang = 'zh-TW';
+            utterance.rate = parseFloat(document.getElementById('rate-select').value) || 1.2;
+            utterance.pitch = parseFloat(document.getElementById('pitch-select').value) || 1.0;
+            utterance.onstart = () => { if (isPaused) return; clearHighlight(); activeHighlightElement = chunk.element; activeHighlightElement.classList.add('reading-highlight'); activeHighlightElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+            utterance.onend = () => {
+                if (!isSpeaking || isPaused) return;
+                if (Date.now() - speakCallTime < 80) { isPaused = true; updateTtsUI(); return; }
+                let delay = parseInt(chunk.element.getAttribute('data-tts-pause') || '0', 10);
+                setTimeout(() => { if (isSpeaking && !isPaused) { currentChunkIndex++; speakNextChunk(); } }, delay);
+            };
+            utterance.onerror = e => { if (isSpeaking && !isPaused && e.error !== 'canceled' && e.error !== 'interrupted') { currentChunkIndex++; speakNextChunk(); } };
+            speakCallTime = Date.now(); synth.speak(utterance);
+        }
+
+        // --- 農曆日期初始化 ---
+        function initLunarDate() {
+            try {
+                const now = new Date();
+                const formatter = new Intl.DateTimeFormat('zh-TW-u-ca-chinese', { year: 'numeric', month: 'numeric', day: 'numeric' });
+                const parts = formatter.formatToParts(now);
+                let yearRaw = "", monthRaw = "", dayRaw = "";
+                parts.forEach(p => {
+                    if (p.type === 'year' || p.type === 'relatedYear') yearRaw = yearRaw || p.value;
+                    if (p.type === 'month') monthRaw = p.value;
+                    if (p.type === 'day') dayRaw = p.value;
+                });
+
+                const parseChineseNum = (str) => {
+                    const clean = String(str).replace(/[閏月日初]/g, '').trim();
+                    if (/^\d+$/.test(clean)) return parseInt(clean, 10);
+                    const map = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '冬': 11, '十一': 11, '臘': 12, '十二': 12 };
+                    if (map[clean] !== undefined) return map[clean];
+                    if (clean.startsWith('廿')) return 20 + (map[clean.slice(1)] || 0);
+                    if (clean.startsWith('二十')) return 20 + (map[clean.slice(2)] || 0);
+                    if (clean.startsWith('三十')) return 30;
+                    if (clean.startsWith('十')) return 10 + (map[clean.slice(1)] || 0);
+                    return NaN;
+                };
+
+                const formatLunarMonth = (mRaw) => {
+                    const isLeap = String(mRaw).includes('閏');
+                    const mNum = parseChineseNum(mRaw);
+                    const mNames = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
+                    const mText = (!isNaN(mNum) && mNames[mNum]) ? mNames[mNum] : String(mRaw).replace(/[閏月]/g, '');
+                    return `${isLeap ? '閏' : ''}${mText}月`;
+                };
+
+                const formatLunarDay = (dRaw) => {
+                    const dNum = parseChineseNum(dRaw);
+                    if (isNaN(dNum) || dNum < 1 || dNum > 30) return String(dRaw).replace(/日/g, '') + '日';
+                    const digits = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+                    if (dNum <= 10) return `初${digits[dNum]}日`;
+                    if (dNum < 20) return `十${digits[dNum - 10]}日`;
+                    if (dNum === 20) return '二十日';
+                    if (dNum < 30) return `廿${digits[dNum - 20]}日`;
+                    return '三十日';
+                };
+
+                let yNum = parseInt(String(yearRaw).replace(/\D/g, ''), 10);
+                let yearStr = "";
+                if (!isNaN(yNum) && yNum > 1900) {
+                    const stems = ["癸", "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬"];
+                    const branches = ["亥", "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌"];
+                    yearStr = stems[(yNum - 3) % 10] + branches[(yNum - 3) % 12];
+                } else {
+                    yearStr = String(yearRaw).replace(/[0-9年]/g, '') || yearRaw;
+                }
+
+                const finalLunarStr = `${yearStr}年${formatLunarMonth(monthRaw)}${formatLunarDay(dayRaw)}`;
+                const el = document.getElementById('lunar-date-text');
+                if (el) el.innerText = finalLunarStr;
+            } catch (e) {}
+        }
+
+        // --- 玄天上帝靈感籤與圖卡 ---
+        const XUANTIAN_LOTS = [
+            { num: "第 01 籤 · 百善孝先", scripture: "「世間萬善孝為先，孝順父母敬神天。」", modern: ["行孝是開啟一切福報的總鑰匙，", "心懷感恩、敬愛父母與師長的人，", "天地與真武大帝自會暗中護持。"], action: ["今天主動打電話或當面問候父母長輩，", "一份真誠的孝心就是最強的護身符。"] },
+            { num: "第 02 籤 · 鎮宅護安", scripture: "「鎮天助順，真武靈應，諸邪遠避。」", modern: ["正氣所在之處，一切負能量皆不敢近，", "只要內心光明坦蕩、立場堅定，", "家宅與事業自然安穩如山。"], action: ["整理辦公桌或居家環境，保持整潔明亮，", "心定氣正，外在干擾便無法動搖您。"] },
+            { num: "第 03 籤 · 劍斬猶豫", scripture: "「七星寶劍伏邪魔，慧光普照破迷津。」", modern: ["面對複雜難解的局勢時，", "不要被恐懼與猶豫牽絆，", "果斷做出正確抉擇就能開創新局。"], action: ["列出今天最關鍵的一件事並立刻動手，", "行動力將為您劈開所有阻礙。"] },
+            { num: "第 04 籤 · 修真悟道", scripture: "「修真悟道，濟度群迷，功圓果滿。」", modern: ["凡事皆需經過磨練與沉澱，", "現在的每一分努力與堅持，", "都是在為未來的飛躍累積底氣。"], action: ["保持耐心深耕專業，不急功近利，", "時機成熟時自然水到渠成。"] },
+            { num: "第 05 籤 · 福德衍慶", scripture: "「福德衍慶，仁慈正烈，吉星常照。」", modern: ["既有原則又有慈悲心的人，", "最能贏得眾人的敬重與追隨，", "福氣與好運將長久伴隨左右。"], action: ["今天在堅持原則的同時多一份寬容，", "以德服人，貴人運自然大開。"] },
+            { num: "第 06 籤 · 消災延壽", scripture: "「虔誦真武報親經，父母延年福壽全。」", modern: ["為家人與父母祈福的善念，", "能轉化為溫暖而強大的守護能量，", "保佑全家大小平安健康、諸事順遂。"], action: ["抽空關心家中長輩的飲食與睡眠，", "家人健康平安就是人生最大的財富。"] }
+        ];
+
+        let currentLot = null;
+        function wrapSvgText(textEl, lines, startY, lineHeight) {
+            if (!textEl) return; textEl.innerHTML = '';
+            lines.forEach((line, idx) => {
+                const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                tspan.setAttribute('x', '300'); tspan.setAttribute('y', String(startY + idx * lineHeight));
+                tspan.textContent = line; textEl.appendChild(tspan);
+            });
+        }
+
+        function drawXuantianLot() {
+            const shakeIcon = document.getElementById('lot-shake-icon'), btnText = document.getElementById('draw-lot-btn-text');
+            if (shakeIcon) shakeIcon.classList.add('animate-bounce');
+            if (btnText) btnText.innerText = '虔誠求籤中...';
+            setTimeout(() => {
+                if (shakeIcon) shakeIcon.classList.remove('animate-bounce');
+                if (btnText) btnText.innerText = '誠心求取今日帝爺公指引';
+                currentLot = XUANTIAN_LOTS[Math.floor(Math.random() * XUANTIAN_LOTS.length)];
+                document.getElementById('svg-lot-number').textContent = currentLot.num;
+                document.getElementById('svg-scripture-quote').textContent = currentLot.scripture;
+                wrapSvgText(document.getElementById('svg-modern-quote'), currentLot.modern, 460, 32);
+                wrapSvgText(document.getElementById('svg-action-guide'), currentLot.action, 636, 26);
+                const lunarText = document.getElementById('lunar-date-text')?.innerText;
+                if (lunarText && lunarText !== '〇年〇月〇日') document.getElementById('svg-date-badge').textContent = `農曆 ${lunarText} · 北極靈感籤`;
+                updateGreetingText();
+                const res = document.getElementById('oracle-result-container');
+                res.classList.remove('hidden'); res.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 450);
+        }
+
+        function getResolvedGreeting() {
+            const val = document.getElementById('greeting-select')?.value || 'auto';
+            if (val !== 'auto') return { greeting: val, isAuto: false };
+            const h = new Date().getHours();
+            return { greeting: (h >= 5 && h < 11) ? '早安' : (h >= 11 && h < 17) ? '日安' : '晚安', isAuto: true };
+        }
+
+        function updateGreetingText() {
+            const { greeting, isAuto } = getResolvedGreeting();
+            const subMap = {
+                '早安': '早安 · 正氣護身',
+                '日安': '日安 · 諸事順遂',
+                '晚安': '晚安 · 闔家平安',
+                '恭祝聖誕千秋': '恭祝 聖誕千秋',
+                '恭賀宮慶圓滿': '恭賀 宮慶圓滿',
+                '參香道誼長存': '參香 道誼長存'
+            };
+            document.getElementById('svg-greeting-title').textContent = subMap[greeting] || greeting;
+            document.getElementById('share-img-btn-text').innerText = `直接分享${greeting}圖卡`;
+            document.getElementById('download-btn-text').innerText = `下載${greeting}圖檔`;
+            const badge = document.getElementById('detected-time-badge');
+            if (badge) badge.textContent = isAuto ? `自動套用「${greeting}」` : `已選擇「${greeting}」`;
+        }
+
+        function renderMorningCardToPngBlob() {
+            return new Promise((resolve, reject) => {
+                const svgEl = document.getElementById('xuantian-morning-svg');
+                let svgStr = new XMLSerializer().serializeToString(svgEl);
+                if (!svgStr.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) svgStr = svgStr.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+                const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' }));
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas'); canvas.width = 1200; canvas.height = 1640;
+                    canvas.getContext('2d').drawImage(img, 0, 0, 1200, 1640); URL.revokeObjectURL(url);
+                    canvas.toBlob(blob => blob ? resolve(blob) : reject(), 'image/png', 0.95);
+                };
+                img.onerror = reject; img.src = url;
+            });
+        }
+
+        async function shareMorningCardImage() {
+            const { greeting } = getResolvedGreeting();
+            const fileName = `臺中明德宮_玄天上帝${greeting}籤卡.png`;
+            try {
+                const blob = await renderMorningCardToPngBlob();
+                const file = new File([blob], fileName, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: `玄天上帝${greeting}正氣籤卡` });
+                } else {
+                    downloadMorningCardPng(); copyOracleText();
+                }
+            } catch (e) { if (e && e.name !== 'AbortError') downloadMorningCardPng(); }
+        }
+
+        async function downloadMorningCardPng() {
+            const { greeting } = getResolvedGreeting();
+            const blob = await renderMorningCardToPngBlob();
+            const url = URL.createObjectURL(blob), a = document.createElement('a');
+            a.download = `臺中明德宮_玄天上帝${greeting}籤卡.png`; a.href = url;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function copyOracleText() {
+            if (!currentLot) return;
+            const { greeting } = getResolvedGreeting();
+            const { shareUrl } = getSharePayload();
+            const text = `【${greeting} · 北極玄天上帝《真武真經》正氣指引籤】\n臺中明德宮天聖堂 敬贈友宮道誼\n\n⚔️ ${currentLot.num}\n📜 聖訓：${currentLot.scripture}\n💡 提點：${currentLot.modern.join('')}\n🔥 行動：${currentLot.action.join('')}\n\n線上恭誦《玄天上帝真經》：\n${shareUrl}`;
+            navigator.clipboard?.writeText(text).then(() => {
+                const el = document.getElementById('copy-text-btn-label');
+                el.innerText = '✅ 已複製祝福文字'; setTimeout(() => { el.innerText = '複製祝福文字'; }, 2500);
+            });
+        }
+
+        initLunarDate();
+    </script>
+</body>
+</html>
