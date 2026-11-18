@@ -56,6 +56,16 @@
             box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
         }
 
+        /* 防止未授權文字選取與拖曳 */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
         /* 動態字體縮放控制 */
         #scripture-content {
             --font-scale: 1;
@@ -97,7 +107,26 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" oncontextmenu="return handleContextMenuGuard(event)" ondragstart="return false;">
+
+    <!-- ==================== 防偷窺 / 開發者工具安全鎖定遮罩 ==================== -->
+    <div id="antiInspectOverlay" class="no-print hidden fixed inset-0 z-[150] bg-stone-950/95 backdrop-blur-xl flex items-center justify-center p-6">
+        <div class="max-w-md w-full bg-red-950 border-2 border-rose-500/80 rounded-3xl p-6 text-center space-y-4 shadow-2xl text-amber-50">
+            <div class="w-16 h-16 rounded-2xl bg-rose-500/20 border border-rose-400/50 text-rose-300 flex items-center justify-center mx-auto text-3xl">
+                🛡️
+            </div>
+            <h2 class="serif-font text-lg sm:text-xl font-black text-white">安全防護已啟動｜禁止檢視原始碼與除錯</h2>
+            <p class="text-xs sm:text-sm text-amber-100/90 leading-relaxed">
+                系統偵測到開發者工具（F12 / DevTools）或未授權的檢視視窗行為。為保護數位版權、程式架構與雲端白名單驗證安全，已自動暫停系統運作。
+            </p>
+            <div class="p-3 rounded-xl bg-stone-950/90 border border-amber-800/70 text-[11px] font-mono text-rose-300">
+                SECURITY_GUARD: DEVTOOLS_OR_INSPECT_DETECTED
+            </div>
+            <button type="button" onclick="attemptUnlockAntiInspect()" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition shadow-lg">
+                我已關閉開發者工具，恢復系統運作
+            </button>
+        </div>
+    </div>
 
     <!-- ==================== 專屬白名單帳號密碼登入閘門遮罩（含應用層級隔離驗證） ==================== -->
     <div id="authLoginOverlay" class="no-print fixed inset-0 z-[120] bg-stone-950/95 backdrop-blur-xl flex items-center justify-center p-4">
@@ -628,13 +657,13 @@
                     <h3 class="serif-font text-2xl md:text-3xl font-bold text-red-950">誦經稟告文式</h3>
                 </div>
                 <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-4 text-center">
-                    <p class="font-bold text-red-950 text-2xl md:text-3xl py-1">恭維</p>
-                    <p>天上聖母慈航普度，威靈顯赫護蒼生。</p>
+                    <p class="font-bold text-red-950 text-2xl md:text-3xl py-1"><ruby>恭<rt>ㄍㄨㄥ</rt></ruby><ruby>維<rt>ㄨㄟˊ</rt></ruby></p>
+                    <p>天上聖母<ruby>慈<rt>ㄘˊ</rt></ruby><ruby>航<rt>ㄏㄤˊ</rt></ruby><ruby>普<rt>ㄆㄨˇ</rt></ruby><ruby>度<rt>ㄉㄨˋ</rt></ruby>，<ruby>威<rt>ㄨㄟ</rt></ruby><ruby>靈<rt>ㄌㄧㄥˊ</rt></ruby><ruby>顯<rt>ㄒㄧㄢˇ</rt></ruby><ruby>赫<rt>ㄏㄜˋ</rt></ruby><ruby>護<rt>ㄏㄨˋ</rt></ruby><ruby>蒼<rt>ㄘㄤ</rt></ruby><ruby>生<rt>ㄕㄥ</rt></ruby>。</p>
                     <div class="pt-2 text-center leading-relaxed">
                         <p class="inline-block" data-tts-pause="2500">弟子<span class="text-stone-400 font-bold mx-1 tts-ignore">〇〇（請默念姓名）</span></p>
                         <p class="inline-block" data-tts-pause="2500">，於<span id="lunar-date-text" class="text-red-800 font-bold mx-1">〇年〇月〇日</span>，敬為<span class="text-stone-400 font-bold mx-1 tts-ignore">祈求平安順遂（請默念祈願）</span>，</p>
                     </div>
-                    <p>虔誠焚香恭誦《天上聖母經》，仰祈聖母慈光加被，消災解厄，闔家安康。</p>
+                    <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby><ruby>誠<rt>ㄔㄥˊ</rt></ruby><ruby>焚<rt>ㄈㄣˊ</rt></ruby><ruby>香<rt>ㄒㄧㄤ</rt></ruby><ruby>恭<rt>ㄍㄨㄥ</rt></ruby><ruby>誦<rt>ㄙㄨㄥˋ</rt></ruby>《天上聖母經》，<ruby>仰<rt>ㄧㄤˇ</rt></ruby><ruby>祈<rt>ㄑㄧˊ</rt></ruby>聖母慈光<ruby>加<rt>ㄐㄧㄚ</rt></ruby><ruby>被<rt>ㄅㄟˋ</rt></ruby>，消災解<ruby>厄<rt>ㄜˋ</rt></ruby>，<ruby>闔<rt>ㄏㄜˊ</rt></ruby>家安<ruby>康<rt>ㄎㄤ</rt></ruby>。</p>
                 </div>
             </section>
 
@@ -644,12 +673,12 @@
                     <h3 class="serif-font text-2xl md:text-3xl font-bold text-red-950">香讚</h3>
                 </div>
                 <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-4 text-center">
-                    <p>香雲彌布，聖德昭彰。菩提心廣莫難量，觸處放毫光，為瑞為祥，供養法中王。</p>
+                    <p>香雲<ruby>彌<rt>ㄇㄧˊ</rt></ruby><ruby>布<rt>ㄅㄨˋ</rt></ruby>，聖德<ruby>昭<rt>ㄓㄠ</rt></ruby><ruby>彰<rt>ㄓㄤ</rt></ruby>。<ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby>心廣<ruby>莫<rt>ㄇㄛˋ</rt></ruby>難<ruby>量<rt>ㄌㄧㄤˊ</rt></ruby>，<ruby>觸<rt>ㄔㄨˋ</rt></ruby>處放<ruby>毫<rt>ㄏㄠˊ</rt></ruby>光，為<ruby>瑞<rt>ㄖㄨㄟˋ</rt></ruby>為<ruby>祥<rt>ㄒㄧㄤˊ</rt></ruby>，<ruby>供<rt>ㄍㄨㄥˋ</rt></ruby><ruby>養<rt>ㄧㄤˇ</rt></ruby>法中王。</p>
                     <div data-repeat="3">
-                        <p class="font-bold text-red-950 text-2xl md:text-3xl pt-2">南無香雲蓋菩薩摩訶薩<span class="text-base md:text-lg text-stone-500 font-normal">（三稱）</span></p>
+                        <p class="font-bold text-red-950 text-2xl md:text-3xl pt-2"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby>香雲<ruby>蓋<rt>ㄍㄞˋ</rt></ruby>菩薩<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><span class="text-base md:text-lg text-stone-500 font-normal">（三稱）</span></p>
                     </div>
                     <div data-repeat="3">
-                        <p class="font-bold text-red-950 text-2xl md:text-3xl">南無天上聖母菩薩<span class="text-base md:text-lg text-stone-500 font-normal">（三稱）</span></p>
+                        <p class="font-bold text-red-950 text-2xl md:text-3xl"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby>天上聖母菩薩<span class="text-base md:text-lg text-stone-500 font-normal">（三稱）</span></p>
                     </div>
                 </div>
 
@@ -657,24 +686,24 @@
                 <div class="grid grid-cols-1 gap-4 pt-4">
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 淨身業真言 】</h4>
-                        <p>唵修哆唎修哆唎修摩唎修摩唎薩婆訶</p>
+                        <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>修哆唎<ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>修摩唎<ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby></p>
                     </div>
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 淨口業真言 】</h4>
-                        <p>唵修唎修唎摩訶修唎修修唎薩婆訶</p>
+                        <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>修唎<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>修唎修修唎<ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby></p>
                     </div>
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 淨意業真言 】</h4>
-                        <p>唵<ruby>嚩<rt>ㄨㄚˊ</rt></ruby>日囉怛訶賀斛</p>
+                        <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>嚩<rt>ㄨㄚˊ</rt></ruby><ruby>日<rt>ㄖˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>賀<rt>ㄏㄜˋ</rt></ruby><ruby>斛<rt>ㄏㄨˊ</rt></ruby></p>
                     </div>
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 安土地真言 】</h4>
-                        <p>南無三滿哆母馱喃唵度嚕度嚕地尾薩婆訶</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby>三滿<ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>母<rt>ㄇㄨˇ</rt></ruby><ruby>馱<rt>ㄊㄨㄛˊ</rt></ruby><ruby>喃<rt>ㄋㄢˊ</rt></ruby><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>嚕<rt>ㄌㄨ</rt></ruby>度嚕<ruby>地<rt>ㄉㄧˋ</rt></ruby><ruby>尾<rt>ㄨㄟˇ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby></p>
                     </div>
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 普供養真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
                         <div data-repeat="3">
-                            <p>唵<ruby>誐<rt>ㄧㄝˊ</rt></ruby><ruby>誐<rt>ㄧㄝˊ</rt></ruby>曩三婆嚩<ruby>韈<rt>ㄨㄚˊ</rt></ruby>日囉斛<span class="text-base text-stone-500">（三遍）</span></p>
+                            <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>誐<rt>ㄧㄝˊ</rt></ruby><ruby>誐<rt>ㄧㄝˊ</rt></ruby><ruby>曩<rt>ㄋㄤˇ</rt></ruby>三<ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>嚩<rt>ㄨㄚˊ</rt></ruby><ruby>韈<rt>ㄨㄚˊ</rt></ruby><ruby>日<rt>ㄖˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>斛<rt>ㄏㄨˊ</rt></ruby><span class="text-base text-stone-500">（三遍）</span></p>
                         </div>
                     </div>
                 </div>
@@ -686,8 +715,8 @@
                 <div class="p-6 md:p-8 bg-amber-50/80 rounded-xl border border-amber-300 text-center avoid-break">
                     <h4 class="font-bold text-red-900 text-xl md:text-2xl mb-4">開經偈</h4>
                     <div class="serif-font text-xl md:text-2xl leading-relaxed space-y-2">
-                        <p>天妃度化應人間，海上現身救苦難。</p>
-                        <p>菩薩心腸悲濁世，威神到處挽狂瀾。</p>
+                        <p>天<ruby>妃<rt>ㄈㄟ</rt></ruby>度化應人間，海上現身救苦難。</p>
+                        <p>菩薩心腸悲<ruby>濁<rt>ㄓㄨㄛˊ</rt></ruby>世，<ruby>威<rt>ㄨㄟ</rt></ruby>神到處<ruby>挽<rt>ㄨㄢˇ</rt></ruby>狂<ruby>瀾<rt>ㄌㄢˊ</rt></ruby>。</p>
                     </div>
                 </div>
 
@@ -700,13 +729,13 @@
                 <!-- 正文（上段：勸善與聖母降生得道因緣） -->
                 <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-6 text-justify">
                     <p class="indent-[2em]">
-                        末法轉時，眾生造業深重；世道崎嶇，人心奸<ruby>訐<rt>ㄐㄧㄝˊ</rt></ruby>莫測。蓋謂受身之後，去聖時遙，佛法無因見聞，因果歷然不信。孰知善惡兩途，業感之勝劣；明闇相形，招報之差別。善者，則謂人天之勝途；惡者，則謂三塗之異<ruby>轍<rt>ㄔㄜˋ</rt></ruby>。修仁義則歸於勝，興殘害則墜於劣。
+                        末法轉時，眾生造<ruby>業<rt>ㄧㄝˋ</rt></ruby>深重；世道<ruby>崎<rt>ㄑㄧˊ</rt></ruby><ruby>嶇<rt>ㄑㄩ</rt></ruby>，人心<ruby>奸<rt>ㄐㄧㄢ</rt></ruby><ruby>訐<rt>ㄐㄧㄝˊ</rt></ruby>莫測。<ruby>蓋<rt>ㄍㄞˋ</rt></ruby>謂受身之後，去聖時<ruby>遙<rt>ㄧㄠˊ</rt></ruby>，佛法無因見聞，因果<ruby>歷<rt>ㄌㄧˋ</rt></ruby>然不信。<ruby>孰<rt>ㄕㄨˊ</rt></ruby>知善惡兩<ruby>途<rt>ㄊㄨˊ</rt></ruby>，業感之勝<ruby>劣<rt>ㄌㄧㄝˋ</rt></ruby>；明<ruby>闇<rt>ㄢˋ</rt></ruby>相形，招報之差別。善者，則謂人天之勝途；惡者，則謂三<ruby>塗<rt>ㄊㄨˊ</rt></ruby>之異<ruby>轍<rt>ㄔㄜˋ</rt></ruby>。修仁義則歸於勝，興殘害則<ruby>墜<rt>ㄓㄨㄟˋ</rt></ruby>於劣。
                     </p>
                     <p class="indent-[2em]">
-                        其居勝者，良由業勝，非<ruby>諍<rt>ㄓㄥ</rt></ruby>兢之所要，受自然之妙樂，趣無上之逍遙。其墜劣者，良由業劣，處三塗之劇苦，受地獄之嚴刑，悲長夜之難旦。而優劣<ruby>皎<rt>ㄐㄧㄠˇ</rt></ruby>然，世人莫能信之。以吾我故，好起疑惑；以疑惑故，多不向善。不受人勸，自任其力，造諸惡事，常習愚痴。從迷至迷，隨物欲以漂沉；由苦入苦，逐色聲而貪染。只圖眼前受用，不顧身後招殃，以致茫茫於苦海之中，無由解脫。然非聖賢出世，何能拯<ruby>拔<rt>ㄅㄚˊ</rt></ruby>。
+                        其居勝者，良由業勝，非<ruby>諍<rt>ㄓㄥ</rt></ruby><ruby>兢<rt>ㄐㄧㄥ</rt></ruby>之所要，受自然之妙樂，<ruby>趣<rt>ㄑㄩˋ</rt></ruby>無上之<ruby>逍<rt>ㄒㄧㄠ</rt></ruby><ruby>遙<rt>ㄧㄠˊ</rt></ruby>。其墜劣者，良由業劣，處三塗之<ruby>劇<rt>ㄐㄩˋ</rt></ruby>苦，受地獄之嚴刑，悲長夜之難<ruby>旦<rt>ㄉㄢˋ</rt></ruby>。而優劣<ruby>皎<rt>ㄐㄧㄠˇ</rt></ruby>然，世人莫能信之。以吾我故，好起疑惑；以疑惑故，多不向善。不受人勸，自任其力，造<ruby>諸<rt>ㄓㄨ</rt></ruby>惡事，常習愚<ruby>痴<rt>ㄔ</rt></ruby>。從迷至迷，隨物欲以<ruby>漂<rt>ㄆㄧㄠ</rt></ruby>沉；由苦入苦，<ruby>逐<rt>ㄓㄨˊ</rt></ruby>色聲而<ruby>貪<rt>ㄊㄢ</rt></ruby><ruby>染<rt>ㄖㄢˇ</rt></ruby>。只圖眼前受用，不顧身後招<ruby>殃<rt>ㄧㄤ</rt></ruby>，以致<ruby>茫<rt>ㄇㄤˊ</rt></ruby><ruby>茫<rt>ㄇㄤˊ</rt></ruby>於苦海之中，無由解脫。然非聖賢出世，何能<ruby>拯<rt>ㄓㄥˇ</rt></ruby><ruby>拔<rt>ㄅㄚˊ</rt></ruby>。
                     </p>
                     <p class="indent-[2em]">
-                        時值宋興，建隆庚申之歲，三月二十三日金烏將西，時有紅光一道，晶瑩奪目，直射湄洲，異香滿室，<ruby>氤氳<rt>ㄧㄣ ㄩㄣ</rt></ruby>不散。俄頃之間，聖女托迹於林家。奇哉彌月，不聞啼哭之聲，故命名曰默娘。幼而聰穎，凡姿不類與群女；從師就學，一讀成誦而文義皆通；事親至孝，閩省女流稱第一。資性<ruby>逈<rt>ㄐㄩㄥˇ</rt></ruby>異，喜愛淨几焚香，信奉觀音，誦經禮佛虔誠。長遇明師，傳授玄門秘法，日夜殷勤參修，未久便能悟諸要典。時年十六，窺井得符，遂得靈通變化，驅邪救世，演大神通，常駕彩雲飛渡大海，救護舟船，眾皆<ruby>啣<rt>ㄒㄧㄢˊ</rt></ruby>恩載德，尊稱通賢聖女。芳華二九，功圓果滿，重陽之日，湄峯頂上，白日飛昇。爾時彩雲密布，天樂齊鳴，竟脫凡胎而入聖胎。自今以後，屢顯神靈，降福與人間，來去<ruby>縹緲<rt>ㄆㄧㄠ ㄇㄧㄠˇ</rt></ruby>，隱現乎江淮河海之中，<ruby>孚<rt>ㄈㄨˊ</rt></ruby>濟護國，保衛轉輸，安波定浪，拯生民於陷溺，化凶險為禎祥。其救世利人之心，無異乎大士之化身，慈帆寶筏，度一切苦厄。婆心至切，視蒼生如赤子，累昭靈異，有禱而必應。
+                        時值宋興，建隆<ruby>庚<rt>ㄍㄥ</rt></ruby><ruby>申<rt>ㄕㄣ</rt></ruby>之歲，三月二十三日金<ruby>烏<rt>ㄨ</rt></ruby>將西，時有紅光一道，<ruby>晶<rt>ㄐㄧㄥ</rt></ruby><ruby>瑩<rt>ㄧㄥˊ</rt></ruby>奪目，直射<ruby>湄<rt>ㄇㄟˊ</rt></ruby><ruby>洲<rt>ㄓㄡ</rt></ruby>，異香滿室，<ruby>氤<rt>ㄧㄣ</rt></ruby><ruby>氳<rt>ㄩㄣ</rt></ruby>不散。<ruby>俄<rt>ㄜˊ</rt></ruby><ruby>頃<rt>ㄑㄧㄥˇ</rt></ruby>之間，聖女<ruby>托<rt>ㄊㄨㄛ</rt></ruby><ruby>迹<rt>ㄐㄧ</rt></ruby>於林家。奇哉<ruby>彌<rt>ㄇㄧˊ</rt></ruby>月，不聞<ruby>啼<rt>ㄊㄧˊ</rt></ruby>哭之聲，故命名曰默娘。幼而<ruby>聰<rt>ㄘㄨㄥ</rt></ruby><ruby>穎<rt>ㄧㄥˇ</rt></ruby>，凡姿不類與群女；從師就學，一讀成誦而文義皆通；事親至孝，<ruby>閩<rt>ㄇㄧㄣˇ</rt></ruby>省女流稱第一。資性<ruby>逈<rt>ㄐㄩㄥˇ</rt></ruby>異，喜愛淨<ruby>几<rt>ㄐㄧ</rt></ruby><ruby>焚<rt>ㄈㄣˊ</rt></ruby>香，信奉觀音，誦經禮佛<ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誠。長遇明師，傳授玄門<ruby>秘<rt>ㄇㄧˋ</rt></ruby>法，日夜<ruby>殷<rt>ㄧㄣ</rt></ruby><ruby>勤<rt>ㄑㄧㄣˊ</rt></ruby><ruby>參<rt>ㄘㄢ</rt></ruby>修，未久便能悟諸要典。時年十六，<ruby>窺<rt>ㄎㄨㄟ</rt></ruby>井得<ruby>符<rt>ㄈㄨˊ</rt></ruby>，<ruby>遂<rt>ㄙㄨㄟˋ</rt></ruby>得靈通變化，<ruby>驅<rt>ㄑㄩ</rt></ruby>邪救世，演大神通，常<ruby>駕<rt>ㄐㄧㄚˋ</rt></ruby>彩雲飛渡大海，救護舟船，眾皆<ruby>啣<rt>ㄒㄧㄢˊ</rt></ruby>恩<ruby>載<rt>ㄗㄞˋ</rt></ruby>德，尊稱通賢聖女。<ruby>芳<rt>ㄈㄤ</rt></ruby><ruby>華<rt>ㄏㄨㄚˊ</rt></ruby>二九，功圓果滿，重陽之日，<ruby>湄<rt>ㄇㄟˊ</rt></ruby><ruby>峯<rt>ㄈㄥ</rt></ruby>頂上，白日飛<ruby>昇<rt>ㄕㄥ</rt></ruby>。爾時彩雲<ruby>密<rt>ㄇㄧˋ</rt></ruby><ruby>布<rt>ㄅㄨˋ</rt></ruby>，天樂齊鳴，<ruby>竟<rt>ㄐㄧㄥˋ</rt></ruby>脫凡胎而入聖胎。自今以後，<ruby>屢<rt>ㄌㄩˇ</rt></ruby>顯神靈，降福與人間，來去<ruby>縹<rt>ㄆㄧㄠ</rt></ruby><ruby>緲<rt>ㄇㄧㄠˇ</rt></ruby>，隱現乎江<ruby>淮<rt>ㄏㄨㄞˊ</rt></ruby>河海之中，<ruby>孚<rt>ㄈㄨˊ</rt></ruby>濟護國，保衛轉<ruby>輸<rt>ㄕㄨ</rt></ruby>，安波定浪，<ruby>拯<rt>ㄓㄥˇ</rt></ruby>生民於<ruby>陷<rt>ㄒㄧㄢˋ</rt></ruby><ruby>溺<rt>ㄋㄧˋ</rt></ruby>，化凶險為<ruby>禎<rt>ㄓㄣ</rt></ruby><ruby>祥<rt>ㄒㄧㄤˊ</rt></ruby>。其救世利人之心，無異乎大士之化身，慈<ruby>帆<rt>ㄈㄢˊ</rt></ruby>寶<ruby>筏<rt>ㄈㄚˊ</rt></ruby>，度一切苦<ruby>厄<rt>ㄜˋ</rt></ruby>。<ruby>婆<rt>ㄆㄛˊ</rt></ruby>心至切，視<ruby>蒼<rt>ㄘㄤ</rt></ruby>生如<ruby>赤<rt>ㄔˋ</rt></ruby>子，累<ruby>昭<rt>ㄓㄠ</rt></ruby>靈異，有<ruby>禱<rt>ㄉㄠˇ</rt></ruby>而必應。
                     </p>
                 </div>
             </section>
@@ -716,28 +745,28 @@
                 <div class="p-6 md:p-8 bg-amber-50/90 rounded-xl border-2 border-amber-400 avoid-break text-center serif-font space-y-3">
                     <h4 class="font-bold text-red-950 text-2xl md:text-3xl mb-4">十五願文</h4>
                     <div class="space-y-2.5 text-stone-800">
-                        <p>虔誦天上聖母經，宮中本命降真寧。</p>
-                        <p>虔誦天上聖母經，家門清吉得安寧。</p>
-                        <p>虔誦天上聖母經，堂上父母享<ruby>遐<rt>ㄒㄧㄚˊ</rt></ruby>齡。</p>
-                        <p>虔誦天上聖母經，過往祖宗可超昇。</p>
-                        <p>虔誦天上聖母經，<ruby>魍魎<rt>ㄨㄤˇ ㄌㄧㄤˇ</rt></ruby>妖魅永滅形。</p>
-                        <p>虔誦天上聖母經，諸般營業必稱情。</p>
-                        <p>虔誦天上聖母經，消災解厄運通行。</p>
-                        <p>虔誦天上聖母經，無子祈求丹桂馨。</p>
-                        <p>虔誦天上聖母經，豪雨暴風即時停。</p>
-                        <p>虔誦天上聖母經，疾病瘟<ruby>㾮<rt>ㄓㄣˇ</rt></ruby>可不生。</p>
-                        <p>虔誦天上聖母經，四海波濤立刻平。</p>
-                        <p>虔誦天上聖母經，注生籍上刪死名。</p>
-                        <p>虔誦天上聖母經，神清氣爽保康寧。</p>
-                        <p>虔誦天上聖母經，一年四季福祿增。</p>
-                        <p>虔誦天上聖母經，善功長保名利貞。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，宮中本命降真<ruby>寧<rt>ㄋㄧㄥˊ</rt></ruby>。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，家門清吉得安<ruby>寧<rt>ㄋㄧㄥˊ</rt></ruby>。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，堂上父母享<ruby>遐<rt>ㄒㄧㄚˊ</rt></ruby><ruby>齡<rt>ㄌㄧㄥˊ</rt></ruby>。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，過往祖宗可超<ruby>昇<rt>ㄕㄥ</rt></ruby>。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，<ruby>魍<rt>ㄨㄤˇ</rt></ruby><ruby>魎<rt>ㄌㄧㄤˇ</rt></ruby>妖<ruby>魅<rt>ㄇㄟˋ</rt></ruby>永滅形。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，諸般<ruby>營<rt>ㄧㄥˊ</rt></ruby>業必<ruby>稱<rt>ㄔㄥˋ</rt></ruby>情。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，消災解<ruby>厄<rt>ㄜˋ</rt></ruby>運通行。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，無子祈求丹<ruby>桂<rt>ㄍㄨㄟˋ</rt></ruby><ruby>馨<rt>ㄒㄧㄣ</rt></ruby>。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，<ruby>豪<rt>ㄏㄠˊ</rt></ruby>雨暴風即時停。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，疾病<ruby>瘟<rt>ㄨㄣ</rt></ruby><ruby>㾮<rt>ㄓㄣˇ</rt></ruby>可不生。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，四海波<ruby>濤<rt>ㄊㄠ</rt></ruby>立刻平。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，注生<ruby>籍<rt>ㄐㄧˊ</rt></ruby>上<ruby>刪<rt>ㄕㄢ</rt></ruby>死名。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，神清氣爽保<ruby>康<rt>ㄎㄤ</rt></ruby><ruby>寧<rt>ㄋㄧㄥˊ</rt></ruby>。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，一年四季福<ruby>祿<rt>ㄌㄨˋ</rt></ruby>增。</p>
+                        <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誦天上聖母經，善功長保名利<ruby>貞<rt>ㄓㄣ</rt></ruby>。</p>
                     </div>
                 </div>
 
                 <!-- 正文（中段：收伏二將與敕封顯靈） -->
                 <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 text-justify pt-2">
                     <p class="indent-[2em]">
-                        虔祈默相，無感而不通。密演神咒，收伏二將在西北，一明千里眼，一聰順風耳，遂服神威而皈正教，隨侍效命，察奸報事，輔吾救世，護國佑民。若有賈客漁夫，或農工伎藝、種作經營，或行兵布陣，或臨產難，或官非<ruby>撓聒<rt>ㄋㄠˊ ㄍㄨㄚ</rt></ruby>，諸多惱害，或色身<ruby>羸<rt>ㄌㄟˊ</rt></ruby>弱，疾病纏身不息者，汝等若能一心恭敬稱我名號，我即應時孚感，悉令所願從心，解諸苦惱。故累代錫命，寵頒褒<ruby>旌<rt>ㄐㄧㄥ</rt></ruby>，迨至清帝敕封天上聖母之號，四海分靈，春秋<ruby>爼<rt>ㄗㄨˇ</rt></ruby>豆連綿不輟。吾常遊化人間，到處現身，學菩薩之精神，悲愍濁世眾生，福善禍<ruby>滛<rt>ㄧㄣˊ</rt></ruby>，禦災捍患，變化而不可測。凡有淨信男女，竭誠致敬而禱者，如影隨形，似響隨聲，皆從其願而錫之福。若有違心悖逆之輩，則有時豈無一二示警，以堅善信之心。其或未然，故于降祥降災之中，安知彰善<ruby>癉<rt>ㄉㄢˋ</rt></ruby>惡之驗。我今重宣偈曰：
+                        <ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>祈默<ruby>相<rt>ㄒㄧㄤˋ</rt></ruby>，無感而不通。密演神咒，收<ruby>伏<rt>ㄈㄨˊ</rt></ruby>二將在西北，一明千里眼，一聰順風耳，<ruby>遂<rt>ㄙㄨㄟˋ</rt></ruby>服神威而<ruby>皈<rt>ㄍㄨㄟ</rt></ruby>正教，隨<ruby>侍<rt>ㄕˋ</rt></ruby>效命，<ruby>察<rt>ㄘㄚˊ</rt></ruby>奸報事，<ruby>輔<rt>ㄈㄨˇ</rt></ruby>吾救世，護國佑民。若有<ruby>賈<rt>ㄍㄨˇ</rt></ruby>客漁夫，或農工<ruby>伎<rt>ㄐㄧˋ</rt></ruby><ruby>藝<rt>ㄧˋ</rt></ruby>、種作經營，或行兵布<ruby>陣<rt>ㄓㄣˋ</rt></ruby>，或<ruby>臨<rt>ㄌㄧㄣˊ</rt></ruby>產難，或官非<ruby>撓<rt>ㄋㄠˊ</rt></ruby><ruby>聒<rt>ㄍㄨㄚ</rt></ruby>，諸多<ruby>惱<rt>ㄋㄠˇ</rt></ruby>害，或色身<ruby>羸<rt>ㄌㄟˊ</rt></ruby>弱，疾病<ruby>纏<rt>ㄔㄢˊ</rt></ruby>身不息者，汝等若能一心恭敬稱我名號，我即應時<ruby>孚<rt>ㄈㄨˊ</rt></ruby>感，<ruby>悉<rt>ㄒㄧ</rt></ruby>令所願從心，解諸苦惱。故累代<ruby>錫<rt>ㄒㄧˊ</rt></ruby>命，<ruby>寵<rt>ㄔㄨㄥˇ</rt></ruby><ruby>頒<rt>ㄅㄢ</rt></ruby><ruby>褒<rt>ㄅㄠ</rt></ruby><ruby>旌<rt>ㄐㄧㄥ</rt></ruby>，<ruby>迨<rt>ㄉㄞˋ</rt></ruby>至清帝<ruby>敕<rt>ㄔˋ</rt></ruby>封天上聖母之號，四海分靈，春秋<ruby>爼<rt>ㄗㄨˇ</rt></ruby>豆連綿不<ruby>輟<rt>ㄔㄨㄛˋ</rt></ruby>。吾常遊化人間，到處現身，學菩薩之精神，悲<ruby>愍<rt>ㄇㄧㄣˇ</rt></ruby><ruby>濁<rt>ㄓㄨㄛˊ</rt></ruby>世眾生，福善禍<ruby>滛<rt>ㄧㄣˊ</rt></ruby>，<ruby>禦<rt>ㄩˋ</rt></ruby>災<ruby>捍<rt>ㄏㄢˋ</rt></ruby>患，變化而不可測。凡有淨信男女，<ruby>竭<rt>ㄐㄧㄝˊ</rt></ruby>誠致敬而<ruby>禱<rt>ㄉㄠˇ</rt></ruby>者，如影隨形，似<ruby>響<rt>ㄒㄧㄤˇ</rt></ruby>隨聲，皆從其願而<ruby>錫<rt>ㄒㄧˊ</rt></ruby>之福。若有<ruby>違<rt>ㄨㄟˊ</rt></ruby>心<ruby>悖<rt>ㄅㄟˋ</rt></ruby><ruby>逆<rt>ㄋㄧˋ</rt></ruby>之<ruby>輩<rt>ㄅㄟˋ</rt></ruby>，則有時豈無一二示<ruby>警<rt>ㄐㄧㄥˇ</rt></ruby>，以堅善信之心。其或未然，故于降祥降災之中，安知彰善<ruby>癉<rt>ㄉㄢˋ</rt></ruby>惡之驗。我今重宣<ruby>偈<rt>ㄐㄧˋ</rt></ruby>曰：
                     </p>
                 </div>
             </section>
@@ -749,25 +778,25 @@
                 </div>
 
                 <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-3 text-center bg-amber-50/50 p-6 md:p-8 rounded-xl border border-amber-200">
-                    <p>天降通賢女，林家誕默娘。祖先多積德，父善母慈衷。</p>
-                    <p>資性超凡俗，稀有眾稱揚。經書勤讀誦，聰明出異常。</p>
-                    <p>純孝為第一，少時好用功。窺井得符<ruby>籙<rt>ㄌㄨˋ</rt></ruby>，遂得運神通。</p>
-                    <p>駕雲飛大海，救險護舟<ruby>舡<rt>ㄒㄧㄤ</rt></ruby>。功果圓滿日，飛昇上湄峰。</p>
-                    <p>爾後常顯跡，隱現乎江中。出神能入化，庇民護國邦。</p>
-                    <p>婆心如大士，隨處駕慈帆。神咒收二將，輔吾<ruby>殄<rt>ㄊㄧㄢˇ</rt></ruby>魔障。</p>
-                    <p>威靈昭四海，孚濟惠津梁。累代功彌著，褒旌德愈彰。</p>
-                    <p>清帝封聖母，解旱降瓊漿。凡勸男女輩，勤勉學典章。</p>
-                    <p>陰<ruby>隲<rt>ㄓˋ</rt></ruby>須多造，作孽惹是非。談仁與說義，古聖必效之。</p>
-                    <p>行孝為百善，正念勿邪思。有過能知改，彼岸尚可期。</p>
-                    <p>禍福由一念，善惡巧報施。果從因招感，苦樂自相隨。</p>
-                    <p>天堂及地府，只在汝心為。光陰元迅速，道德急修持。</p>
-                    <p>人身非易得，蹉過實難追。勸君休曖昧，我語信無疑。</p>
+                    <p>天降通賢女，林家<ruby>誕<rt>ㄉㄢˋ</rt></ruby>默娘。祖先多積德，父善母慈<ruby>衷<rt>ㄓㄨㄥ</rt></ruby>。</p>
+                    <p>資性超凡<ruby>俗<rt>ㄙㄨˊ</rt></ruby>，稀有眾稱揚。經書<ruby>勤<rt>ㄑㄧㄣˊ</rt></ruby>讀誦，聰明出異常。</p>
+                    <p>純孝為第一，少時好用功。<ruby>窺<rt>ㄎㄨㄟ</rt></ruby>井得<ruby>符<rt>ㄈㄨˊ</rt></ruby><ruby>籙<rt>ㄌㄨˋ</rt></ruby>，<ruby>遂<rt>ㄙㄨㄟˋ</rt></ruby>得運神通。</p>
+                    <p><ruby>駕<rt>ㄐㄧㄚˋ</rt></ruby>雲飛大海，救險護舟<ruby>舡<rt>ㄒㄧㄤ</rt></ruby>。功果圓滿日，飛<ruby>昇<rt>ㄕㄥ</rt></ruby>上<ruby>湄<rt>ㄇㄟˊ</rt></ruby><ruby>峰<rt>ㄈㄥ</rt></ruby>。</p>
+                    <p>爾後常顯<ruby>跡<rt>ㄐㄧ</rt></ruby>，隱現乎江中。出神能入化，<ruby>庇<rt>ㄅㄧˋ</rt></ruby>民護國<ruby>邦<rt>ㄅㄤ</rt></ruby>。</p>
+                    <p><ruby>婆<rt>ㄆㄛˊ</rt></ruby>心如大士，隨處駕慈<ruby>帆<rt>ㄈㄢˊ</rt></ruby>。神咒收二將，<ruby>輔<rt>ㄈㄨˇ</rt></ruby>吾<ruby>殄<rt>ㄊㄧㄢˇ</rt></ruby>魔<ruby>障<rt>ㄓㄤˋ</rt></ruby>。</p>
+                    <p>威靈昭四海，<ruby>孚<rt>ㄈㄨˊ</rt></ruby>濟惠<ruby>津<rt>ㄐㄧㄣ</rt></ruby><ruby>梁<rt>ㄌㄧㄤˊ</rt></ruby>。累代功<ruby>彌<rt>ㄇㄧˊ</rt></ruby>著，<ruby>褒<rt>ㄅㄠ</rt></ruby><ruby>旌<rt>ㄐㄧㄥ</rt></ruby>德<ruby>愈<rt>ㄩˋ</rt></ruby><ruby>彰<rt>ㄓㄤ</rt></ruby>。</p>
+                    <p>清帝封聖母，解旱降<ruby>瓊<rt>ㄑㄩㄥˊ</rt></ruby><ruby>漿<rt>ㄐㄧㄤ</rt></ruby>。凡勸男女<ruby>輩<rt>ㄅㄟˋ</rt></ruby>，<ruby>勤<rt>ㄑㄧㄣˊ</rt></ruby><ruby>勉<rt>ㄇㄧㄢˇ</rt></ruby>學<ruby>典<rt>ㄉㄧㄢˇ</rt></ruby><ruby>章<rt>ㄓㄤ</rt></ruby>。</p>
+                    <p><ruby>陰<rt>ㄧㄣ</rt></ruby><ruby>隲<rt>ㄓˋ</rt></ruby>須多造，作<ruby>孽<rt>ㄋㄧㄝˋ</rt></ruby>惹是非。談仁與說義，古聖必<ruby>效<rt>ㄒㄧㄠˋ</rt></ruby>之。</p>
+                    <p>行孝為百善，正<ruby>念<rt>ㄋㄧㄢˋ</rt></ruby>勿<ruby>邪<rt>ㄒㄧㄝˊ</rt></ruby>思。有過能知改，<ruby>彼<rt>ㄅㄧˇ</rt></ruby><ruby>岸<rt>ㄢˋ</rt></ruby>尚可期。</p>
+                    <p>禍福由一念，善惡巧報<ruby>施<rt>ㄕ</rt></ruby>。果從因招感，苦樂自相隨。</p>
+                    <p>天堂及地府，只在汝心為。光陰元<ruby>迅<rt>ㄒㄩㄣˋ</rt></ruby><ruby>速<rt>ㄙㄨˋ</rt></ruby>，道德急修持。</p>
+                    <p>人身非易得，<ruby>蹉<rt>ㄘㄨㄛ</rt></ruby>過實難追。勸君休<ruby>曖<rt>ㄞˋ</rt></ruby><ruby>昧<rt>ㄇㄟˋ</rt></ruby>，我語信無疑。</p>
                 </div>
 
                 <!-- 正文（末段：奉誦功德利益） -->
                 <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 text-justify pt-2">
                     <p class="indent-[2em]">
-                        是故世人，朝夕焚香虔誠奉誦此經者，我即隨其音聲，於怖畏急難之中，示大威神之力，<ruby>祛<rt>ㄑㄩ</rt></ruby>除險難，殄滅魔軍，<ruby>裨<rt>ㄅㄧˋ</rt></ruby>獲安泰，清淨身心。或有見聞是經，能轉念受持讀誦者，當知是人其功德力，莫可稱量。若有正信男女，曉悟宿因，知福德感，應當一心修習正法，捨離<ruby>慳<rt>ㄑㄧㄢ</rt></ruby>貪，喜結眾善，勤行布施，修齋作福。諸如精進不懈者，豈惟只是此世善根深厚，來生智慧自然增長，令彼內魔不起，外患無侵，安閒自在，修學一切法門，斷除煩惱雜念，同登覺路，捨業報身，得解脫樂，生生世世，行菩薩道，利益一切有情，<ruby>庶幾<rt>ㄕㄨˋ ㄐㄧ</rt></ruby>善果周隆，妙利無窮。世人信受聽我語，神光照耀護汝身。
+                        是故世人，朝夕<ruby>焚<rt>ㄈㄣˊ</rt></ruby>香<ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby>誠奉誦此經者，我即隨其音聲，於<ruby>怖<rt>ㄅㄨˋ</rt></ruby><ruby>畏<rt>ㄨㄟˋ</rt></ruby>急難之中，示大威神之力，<ruby>祛<rt>ㄑㄩ</rt></ruby>除險難，<ruby>殄<rt>ㄊㄧㄢˇ</rt></ruby>滅魔軍，<ruby>裨<rt>ㄅㄧˋ</rt></ruby>獲安<ruby>泰<rt>ㄊㄞˋ</rt></ruby>，清淨身心。或有見聞是經，能轉念受持讀誦者，當知是人其功德力，莫可稱<ruby>量<rt>ㄌㄧㄤˊ</rt></ruby>。若有正信男女，<ruby>曉<rt>ㄒㄧㄠˇ</rt></ruby>悟<ruby>宿<rt>ㄙㄨˋ</rt></ruby>因，知福德感，應當一心修習正法，捨離<ruby>慳<rt>ㄑㄧㄢ</rt></ruby><ruby>貪<rt>ㄊㄢ</rt></ruby>，喜結眾善，勤行布<ruby>施<rt>ㄕ</rt></ruby>，修<ruby>齋<rt>ㄓㄞ</rt></ruby>作福。諸如精進不<ruby>懈<rt>ㄒㄧㄝˋ</rt></ruby>者，豈<ruby>惟<rt>ㄨㄟˊ</rt></ruby>只是此世善根深厚，來生智慧自然<ruby>增<rt>ㄗㄥ</rt></ruby><ruby>長<rt>ㄓㄤˇ</rt></ruby>，令彼內魔不起，外患無<ruby>侵<rt>ㄑㄧㄣ</rt></ruby>，安閒自在，修學一切法門，<ruby>斷<rt>ㄉㄨㄢˋ</rt></ruby>除煩惱雜念，同登<ruby>覺<rt>ㄐㄩㄝˊ</rt></ruby>路，捨業報身，得解脫樂，生生世世，行菩薩道，利益一切有情，<ruby>庶<rt>ㄕㄨˋ</rt></ruby><ruby>幾<rt>ㄐㄧ</rt></ruby>善果<ruby>周<rt>ㄓㄡ</rt></ruby><ruby>隆<rt>ㄌㄨㄥˊ</rt></ruby>，妙利無窮。世人信受聽我語，神光照<ruby>耀<rt>ㄧㄠˋ</rt></ruby>護汝身。
                     </p>
                 </div>
 
@@ -782,21 +811,21 @@
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 真言曰 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
                         <div data-repeat="3">
-                            <p>唵哆唎哆唎咄哆唎咄咄哆唎娑婆訶<span class="text-base text-stone-500">（三遍）</span></p>
+                            <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>哆唎<ruby>咄<rt>ㄉㄨㄛ</rt></ruby>哆唎咄咄哆唎<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><span class="text-base text-stone-500">（三遍）</span></p>
                         </div>
                     </div>
 
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 補闕真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
                         <div data-repeat="3">
-                            <p>南無喝囉怛那哆囉夜耶佉囉佉囉俱住俱住摩囉摩囉虎囉吽賀賀蘇怛拏吽潑抹拏娑婆訶<span class="text-base text-stone-500">（三遍）</span></p>
+                            <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>喝<rt>ㄏㄜ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby><ruby>佉<rt>ㄑㄩ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>佉囉<ruby>俱<rt>ㄐㄩˋ</rt></ruby><ruby>住<rt>ㄓㄨˋ</rt></ruby>俱住<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>摩囉<ruby>虎<rt>ㄏㄨˇ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>吽<rt>ㄏㄨㄥ</rt></ruby><ruby>賀<rt>ㄏㄜˋ</rt></ruby>賀<ruby>蘇<rt>ㄙㄨ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>拏<rt>ㄋㄚˊ</rt></ruby><ruby>吽<rt>ㄏㄨㄥ</rt></ruby><ruby>潑<rt>ㄆㄛ</rt></ruby><ruby>抹<rt>ㄇㄛˇ</rt></ruby><ruby>拏<rt>ㄋㄚˊ</rt></ruby><ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><span class="text-base text-stone-500">（三遍）</span></p>
                         </div>
                     </div>
 
                     <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 text-center serif-font space-y-2">
                         <h4 class="font-bold text-red-900">【 補闕圓滿真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
                         <div data-repeat="3">
-                            <p>唵呼嚧呼嚧社曳穆契莎訶<span class="text-base text-stone-500">（三遍）</span></p>
+                            <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>呼<rt>ㄏㄨ</rt></ruby><ruby>嚧<rt>ㄌㄨˊ</rt></ruby>呼嚧<ruby>社<rt>ㄕㄜˋ</rt></ruby><ruby>曳<rt>ㄧˋ</rt></ruby><ruby>穆<rt>ㄇㄨˋ</rt></ruby><ruby>契<rt>ㄑㄧˋ</rt></ruby><ruby>莎<rt>ㄙㄨㄛ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><span class="text-base text-stone-500">（三遍）</span></p>
                         </div>
                     </div>
                 </div>
@@ -804,19 +833,19 @@
                 <!-- 天上聖母偈與聖號 -->
                 <div class="p-6 md:p-8 bg-amber-50/80 rounded-xl border border-amber-300 text-center serif-font space-y-4">
                     <h4 class="font-bold text-red-900 text-xl md:text-2xl">天上聖母偈</h4>
-                    <p>天妃菩薩降人間，上恩普濟施妙化。聖德參天被三界，母儀配地廣四海。</p>
-                    <p class="font-bold text-red-950">南無湄洲島上，海上慈航，護國佑民，聞聲救苦，人天恭敬，天上聖母菩薩。</p>
+                    <p>天<ruby>妃<rt>ㄈㄟ</rt></ruby>菩薩降人間，上恩普濟<ruby>施<rt>ㄕ</rt></ruby>妙化。聖德<ruby>參<rt>ㄘㄢ</rt></ruby>天<ruby>被<rt>ㄅㄟˋ</rt></ruby>三界，母儀<ruby>配<rt>ㄆㄟˋ</rt></ruby>地廣四海。</p>
+                    <p class="font-bold text-red-950"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>湄<rt>ㄇㄟˊ</rt></ruby><ruby>洲<rt>ㄓㄡ</rt></ruby>島上，海上慈<ruby>航<rt>ㄏㄤˊ</rt></ruby>，護國佑民，聞聲救苦，人天恭敬，天上聖母菩薩。</p>
                     <div data-repeat="3">
-                        <p class="font-black text-red-900 text-2xl md:text-3xl">南無天上聖母菩薩<span class="text-base md:text-lg text-stone-500 font-normal">（數百聲）</span>聖母菩薩</p>
+                        <p class="font-black text-red-900 text-2xl md:text-3xl"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby>天上聖母菩薩<span class="text-base md:text-lg text-stone-500 font-normal">（數百聲）</span>聖母菩薩</p>
                     </div>
                 </div>
 
                 <!-- 三皈依 -->
                 <div class="p-6 md:p-8 bg-white rounded-xl border border-amber-200 text-center serif-font space-y-3">
-                    <h4 class="font-bold text-red-900 text-xl md:text-2xl mb-2">三皈依</h4>
-                    <p>自皈依佛，當願眾生，體解大道，發無上心。</p>
-                    <p>自皈依法，當願眾生，深入經藏，智慧如海。</p>
-                    <p>自皈依僧，當願眾生，統理大眾，一切無礙。和南聖眾。</p>
+                    <h4 class="font-bold text-red-900 text-xl md:text-2xl mb-2">三<ruby>皈<rt>ㄍㄨㄟ</rt></ruby>依</h4>
+                    <p>自<ruby>皈<rt>ㄍㄨㄟ</rt></ruby>依佛，當願眾生，體解大道，發無上心。</p>
+                    <p>自<ruby>皈<rt>ㄍㄨㄟ</rt></ruby>依法，當願眾生，深入經<ruby>藏<rt>ㄗㄤˋ</rt></ruby>，智慧如海。</p>
+                    <p>自<ruby>皈<rt>ㄍㄨㄟ</rt></ruby>依僧，當願眾生，<ruby>統<rt>ㄊㄨㄥˇ</rt></ruby>理大眾，一切無<ruby>礙<rt>ㄞˋ</rt></ruby>。<ruby>和<rt>ㄏㄜˊ</rt></ruby><ruby>南<rt>ㄋㄢˊ</rt></ruby>聖眾。</p>
                 </div>
             </section>
 
@@ -824,24 +853,24 @@
             <section id="sec-huixiang" class="p-8 bg-red-900 text-amber-50 rounded-xl text-center avoid-break serif-font space-y-6 scroll-mt-8">
                 <div class="space-y-3">
                     <h4 class="font-bold text-2xl md:text-3xl text-amber-200">完經讚</h4>
-                    <p class="text-xl md:text-2xl leading-relaxed">海天活佛，渡世慈帆。湄洲救劫靜波浪，思議妙難量，淨化四方，萬姓沐恩光。</p>
+                    <p class="text-xl md:text-2xl leading-relaxed">海天活佛，渡世慈<ruby>帆<rt>ㄈㄢˊ</rt></ruby>。<ruby>湄<rt>ㄇㄟˊ</rt></ruby><ruby>洲<rt>ㄓㄡ</rt></ruby>救<ruby>劫<rt>ㄐㄧㄝˊ</rt></ruby>靜波浪，<ruby>思<rt>ㄙ</rt></ruby><ruby>議<rt>ㄧˋ</rt></ruby>妙難<ruby>量<rt>ㄌㄧㄤˊ</rt></ruby>，淨化四方，萬姓<ruby>沐<rt>ㄇㄨˋ</rt></ruby>恩光。</p>
                     <div data-repeat="3">
-                        <p class="font-black text-2xl md:text-3xl text-amber-300 pt-2">南無天上聖母菩薩摩訶薩<span class="text-lg md:text-xl text-amber-400 font-normal">（三稱）</span></p>
+                        <p class="font-black text-2xl md:text-3xl text-amber-300 pt-2"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby>天上聖母菩薩<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><span class="text-lg md:text-xl text-amber-400 font-normal">（三稱）</span></p>
                     </div>
                 </div>
 
                 <div class="border-t border-amber-500/40 pt-6 space-y-5 text-left md:text-center">
                     <div>
-                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向偈（一）</h5>
-                        <p>願消三障諸煩惱，願得智慧正明了。普願罪障悉消除，世世常行菩薩道。</p>
+                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向<ruby>偈<rt>ㄐㄧˋ</rt></ruby>（一）</h5>
+                        <p>願消三<ruby>障<rt>ㄓㄤˋ</rt></ruby>諸煩惱，願得智慧正明了。普願罪<ruby>障<rt>ㄓㄤˋ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby>消除，世世常行菩薩道。</p>
                     </div>
                     <div>
-                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向偈（二）</h5>
-                        <p>願以此功德，莊嚴佛淨土。上報四重恩，下濟三塗苦。若有見聞者，悉發菩提心。盡此一報身，同生極樂國。</p>
+                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向<ruby>偈<rt>ㄐㄧˋ</rt></ruby>（二）</h5>
+                        <p>願以此功德，<ruby>莊<rt>ㄓㄨㄤ</rt></ruby><ruby>嚴<rt>ㄧㄢˊ</rt></ruby>佛淨土。上報四重恩，下<ruby>濟<rt>ㄐㄧˋ</rt></ruby>三<ruby>塗<rt>ㄊㄨˊ</rt></ruby>苦。若有見聞者，<ruby>悉<rt>ㄒㄧ</rt></ruby>發<ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby>心。盡此一報身，同生極樂國。</p>
                     </div>
                     <div>
-                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向偈（三）</h5>
-                        <p>誦經功德殊勝行，無邊勝福皆回向。普願沉溺諸眾生，速往無量光佛剎。十方三世一切佛，一切菩薩摩訶薩，摩訶般若波羅蜜。</p>
+                        <h5 class="font-bold text-amber-200 text-lg md:text-xl mb-1">回向<ruby>偈<rt>ㄐㄧˋ</rt></ruby>（三）</h5>
+                        <p>誦經功德殊勝行，無邊勝福皆回向。普願<ruby>沉<rt>ㄔㄣˊ</rt></ruby><ruby>溺<rt>ㄋㄧˋ</rt></ruby>諸眾生，速往無量光佛<ruby>剎<rt>ㄔㄚˋ</rt></ruby>。十方三世一切佛，一切菩薩<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby>，<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>般<rt>ㄅㄛ</rt></ruby><ruby>若<rt>ㄖㄜˇ</rt></ruby><ruby>波<rt>ㄅㄛ</rt></ruby><ruby>羅<rt>ㄌㄨㄛˊ</rt></ruby><ruby>蜜<rt>ㄇㄧˋ</rt></ruby>。</p>
                     </div>
                 </div>
             </section>
@@ -849,11 +878,19 @@
         </div>
     </main>
 
-    <!-- 頁尾 (No Print) -->
-    <footer class="no-print bg-stone-900 text-stone-400 py-6 px-4 text-center text-sm border-t border-stone-800 space-y-2 pb-24 md:pb-8">
-        <p class="text-stone-300 font-medium">《天上聖母經》（媽祖經）數位共修結緣 PWA 獨立版</p>
-        <p class="text-xs text-stone-400">支援加入手機主畫面離線閱讀、卡拉 OK 語音循環帶讀計次與每日靈感籤卡分享，免費流通、廣結善緣。</p>
+    <!-- 頁尾與著作智慧所有權宣告 (No Print) -->
+    <footer class="no-print bg-stone-900 text-stone-400 py-7 px-4 text-center text-sm border-t border-stone-800 space-y-2.5 pb-24 md:pb-8">
+        <p class="text-stone-200 font-bold">《天上聖母經》（媽祖經）數位共修結緣 PWA 獨立版</p>
+        <p class="text-xs text-stone-400">支援加入手機主畫面離線閱讀、卡拉 OK 語音循環帶讀計次與每日靈感籤卡分享，廣結善緣。</p>
         <p class="text-xs text-stone-500">祈願 天上聖母 慈光普照，風調雨順，國泰民安，闔家平安。</p>
+        <div class="pt-3 mt-2 border-t border-stone-800/90 max-w-2xl mx-auto space-y-1">
+            <p class="text-xs text-amber-300/90 font-bold tracking-wide">
+                © 2026 黃國豐 版權所有 · 保留一切權利 (All Rights Reserved)
+            </p>
+            <p class="text-[11px] text-stone-400 leading-relaxed">
+                本網頁系統架構、介面設計、語音同步帶讀引擎、互動籤卡與白名單安全防護程式之著作權及智慧財產權均屬 <strong class="text-amber-200">黃國豐</strong> 所有。未經著作權人書面授權，嚴禁擅自重製、反編譯、修改、擷取原始碼或用於任何商業用途。
+            </p>
+        </div>
     </footer>
 
     <!-- 分享結緣互動彈窗 -->
@@ -964,6 +1001,67 @@
 
     <!-- JavaScript 核心控制邏輯 -->
     <script>
+        // ==========================================
+        // --- 0. 防程式碼側窺與智慧財產權保護 (F12 / DevTools / 右鍵鎖定) ---
+        // ==========================================
+        let antiInspectLocked = false;
+
+        function triggerAntiInspectLock() {
+            if (antiInspectLocked) return;
+            antiInspectLocked = true;
+            if (typeof isSpeaking !== 'undefined' && isSpeaking) {
+                try { stopSpeech(); } catch (e) {}
+            }
+            const overlay = document.getElementById('antiInspectOverlay');
+            if (overlay) overlay.classList.remove('hidden');
+        }
+
+        function attemptUnlockAntiInspect() {
+            const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
+            const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
+            if (widthDiff > 200 || heightDiff > 220) {
+                return;
+            }
+            antiInspectLocked = false;
+            const overlay = document.getElementById('antiInspectOverlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        function handleContextMenuGuard(e) {
+            const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return true;
+            e.preventDefault();
+            return false;
+        }
+
+        (function initAntiInspectGuard() {
+            document.addEventListener('keydown', function (e) {
+                const key = (e.key || '').toUpperCase();
+                const isF12 = key === 'F12' || e.keyCode === 123;
+                const isDevShortcut = (e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'J', 'C', 'K'].includes(key);
+                const isViewSourceOrSave = (e.ctrlKey || e.metaKey) && !e.shiftKey && ['U', 'S'].includes(key);
+
+                if (isF12 || isDevShortcut || isViewSourceOrSave) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isF12 || isDevShortcut) triggerAntiInspectLock();
+                    return false;
+                }
+            }, true);
+
+            const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            if (!isMobileDevice) {
+                setInterval(() => {
+                    if (antiInspectLocked) return;
+                    const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
+                    const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
+                    if (widthDiff > 210 || heightDiff > 230) {
+                        triggerAntiInspectLock();
+                    }
+                }, 1200);
+            }
+        })();
+
         // ==========================================
         // --- 1. 單檔獨立內建 PWA 核心 ---
         // ==========================================
