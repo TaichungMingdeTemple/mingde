@@ -20,23 +20,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* 內建基礎備援樣式（確保無 Tailwind 或沙盒預覽環境下畫面也不走鐘、彈窗預設隱藏） */
-        .hidden { display: none !important; }
-        button svg, a svg { width: 1rem; height: 1rem; max-width: 1.25rem; max-height: 1.25rem; flex-shrink: 0; }
-        #mazu-morning-svg { width: 100%; height: auto; max-width: 100%; display: block; }
-
         html, body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #fcfbf7;
             color: #2b2b2b;
             overflow-x: clip;
             scroll-behavior: smooth;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        input, textarea, select {
-            -webkit-user-select: text;
-            user-select: text;
         }
         .serif-font {
             font-family: 'Noto Serif TC', serif;
@@ -65,6 +54,16 @@
             padding: 0.25rem 0.5rem;
             margin: -0.25rem -0.5rem;
             box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+        }
+
+        /* 防止未授權文字選取與拖曳 */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         /* 動態字體縮放控制 */
@@ -131,9 +130,9 @@
 
     <!-- ==================== 頂部常駐頁首 (sticky top-0 隨畫面捲動始終維持在最上方) ==================== -->
     <header id="main-top-header" class="no-print sticky top-0 z-40 bg-red-950/95 backdrop-blur-md text-amber-50 shadow-lg border-b-2 border-amber-500/70">
-        <!-- 頂部結緣敬獻橫幅：始終維持在最上方 -->
+        <!-- 頂部結緣敬獻橫幅：始終維持在最上方（支援 ?to=友宮名稱 動態替換） -->
         <div class="bg-gradient-to-r from-amber-900 via-red-900 to-amber-900 border-b border-amber-500/40 px-3 py-1.5 text-center">
-            <p class="serif-font text-xs sm:text-sm font-bold tracking-wider text-amber-200">
+            <p id="top-diplomatic-banner" class="serif-font text-xs sm:text-sm font-bold tracking-wider text-amber-200">
                 🏮 臺中明德宮鸞生 <span class="text-white underline decoration-amber-400 underline-offset-4">黃國豐</span> 製作 · 敬獻世間十方信眾免費恭誦《天上聖母經》 🌊
             </p>
         </div>
@@ -191,10 +190,10 @@
                     <span>本次第 <span id="loop-count-text">1</span> 遍</span>
                 </div>
 
-                <!-- 分享結緣按鈕 (支援 LINE / IG / E-mail / 複製) -->
-                <button onclick="shareScripture()" class="bg-emerald-700 hover:bg-emerald-600 text-amber-50 font-bold px-3 py-1.5 rounded-lg text-xs md:text-sm shadow-md transition flex items-center space-x-1 border border-emerald-500/70" title="分享至 LINE、Instagram 或 E-mail">
+                <!-- 友宮分享結緣按鈕 -->
+                <button onclick="shareScripture()" class="bg-emerald-700 hover:bg-emerald-600 text-amber-50 font-bold px-3 py-1.5 rounded-lg text-xs md:text-sm shadow-md transition flex items-center space-x-1 border border-emerald-500/70" title="致贈友宮或分享給十方善信">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                    <span>分享<span class="hidden sm:inline">結緣</span></span>
+                    <span>友宮<span class="hidden sm:inline">結緣</span></span>
                 </button>
 
                 <!-- 安裝至桌面按鈕 -->
@@ -298,6 +297,13 @@
     <!-- 主內容區 -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-8">
 
+        <!-- 友宮專屬致贈賀匾（若網址帶有 ?to=友宮名稱 時自動顯示） -->
+        <div id="diplomatic-gift-card" class="hidden bg-gradient-to-r from-red-950 via-red-900 to-amber-950 text-amber-50 rounded-2xl shadow-lg border-2 border-amber-400 p-5 mb-6 text-center space-y-1.5">
+            <span class="inline-block bg-amber-300 text-red-950 text-xs font-black px-3 py-0.5 rounded-full tracking-widest">臺中明德宮天聖堂 · 鸞堂友宮法脈賀禮</span>
+            <h3 id="diplomatic-temple-heading" class="serif-font text-xl md:text-2xl font-black text-amber-200 tracking-wide">敬賀 友宮 聖務昌隆 · 道誼長存</h3>
+            <p class="text-xs md:text-sm text-amber-100/90">謹以《天上聖母經》數位共修結緣本敬獻貴宮堂社，祈願天上聖母慈航護佑、香火鼎盛。</p>
+        </div>
+
         <!-- 經本封面卡片 -->
         <div class="bg-white rounded-2xl shadow-md border border-amber-200/80 p-6 md:p-10 mb-6 text-center relative overflow-hidden">
             <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>
@@ -387,16 +393,19 @@
             <!-- 籤詩與動態 SVG 圖卡顯示區 -->
             <div id="oracle-result-container" class="hidden transition-all duration-500 max-w-lg mx-auto">
 
-                <!-- 問候語選擇器 (支援依目前時間自動偵測，亦可手動切換早安/日安/晚安) -->
+                <!-- 問候語選擇器 (支援依目前時間自動偵測，亦可手動切換日常問候或外交祝賀) -->
                 <div class="mt-2 mb-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-amber-100/70 p-3 rounded-xl border border-amber-300/70 shadow-inner">
                     <label for="greeting-select" class="text-sm font-bold text-red-950 flex items-center space-x-1">
-                        <span>✏️</span><span>選擇分享問候語：</span>
+                        <span>✏️</span><span>圖卡抬頭模式：</span>
                     </label>
                     <select id="greeting-select" onchange="updateGreetingText()" class="bg-white border-2 border-amber-400 text-red-900 text-sm rounded-lg focus:ring-red-700 focus:border-red-700 block px-4 py-1.5 font-bold shadow-sm outline-none cursor-pointer">
-                        <option value="auto" selected>⏰ 自動偵測時段</option>
-                        <option value="早安">🌅 早安</option>
-                        <option value="日安">☀️ 日安</option>
-                        <option value="晚安">🌙 晚安</option>
+                        <option value="auto" selected>⏰ 自動偵測時段 (早/日/晚安)</option>
+                        <option value="早安">🌅 日常：早安平安</option>
+                        <option value="日安">☀️ 日常：日安順遂</option>
+                        <option value="晚安">🌙 日常：晚安吉祥</option>
+                        <option value="恭祝聖誕千秋">🏮 外交：恭祝聖誕千秋</option>
+                        <option value="恭賀宮慶圓滿">🎊 外交：恭賀宮慶圓滿</option>
+                        <option value="參香道誼長存">🤝 外交：參香道誼長存</option>
                     </select>
                     <span id="detected-time-badge" class="text-xs font-bold text-amber-900 bg-amber-200/80 px-2.5 py-1 rounded-full"></span>
                 </div>
@@ -484,7 +493,7 @@
                         <rect x="26" y="26" width="548" height="768" rx="12" fill="none" stroke="url(#mazuGoldBorder)" stroke-width="1" stroke-dasharray="6,4"/>
 
                         <!-- 7. 頂部聖號抬頭與問候語 -->
-                        <text x="300" y="68" text-anchor="middle" fill="#fef3c7" font-family="'Noto Serif TC', serif" font-size="20" font-weight="700" letter-spacing="4" filter="drop-shadow(0px 1px 3px rgba(0,0,0,0.7))">湄洲慈航 · 天上聖母</text>
+                        <text id="svg-top-temple-tag" x="300" y="68" text-anchor="middle" fill="#fef3c7" font-family="'Noto Serif TC', serif" font-size="20" font-weight="700" letter-spacing="4" filter="drop-shadow(0px 1px 3px rgba(0,0,0,0.7))">湄洲慈航 · 天上聖母</text>
                         <text id="svg-greeting-title" x="300" y="122" text-anchor="middle" fill="#ffffff" font-family="'Noto Serif TC', serif" font-size="38" font-weight="900" letter-spacing="6" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.65))">早安 · 慈航平安</text>
                         <text id="svg-date-badge" x="300" y="156" text-anchor="middle" fill="#fef08a" font-family="'Noto Sans TC', sans-serif" font-size="16" font-weight="700" letter-spacing="2" filter="drop-shadow(0px 1px 3px rgba(0,0,0,0.9))">天上聖母經 · 每日慈悲指引籤</text>
 
@@ -784,39 +793,39 @@
         </div>
     </footer>
 
-    <!-- 多管道分享結緣互動彈窗 (LINE / Instagram / E-mail / 複製連結) -->
+    <!-- 友宮外交分享與專屬致贈連結產生器彈窗 -->
     <div id="share-modal" class="no-print hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeShareModal()">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-300 space-y-5 relative">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-400 space-y-4 relative">
             <button onclick="closeShareModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100" aria-label="關閉">✕</button>
 
             <div class="text-center space-y-1">
-                <span class="inline-block bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">慈航普度 · 廣結善緣</span>
-                <h3 class="serif-font text-2xl font-black text-red-950 pt-1">分享《天上聖母經》結緣本</h3>
-                <p class="text-xs text-stone-500">臺中明德宮鸞生 黃國豐製作 · 敬獻十方信眾恭誦</p>
+                <span class="inline-block bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">慈航道誼 · 廣結善緣</span>
+                <h3 class="serif-font text-2xl font-black text-red-950 pt-1">致贈《天上聖母經》結緣本</h3>
+                <p class="text-xs text-stone-500">可輸入友宮或堂社名稱，自動產生專屬致贈賀詞與連結</p>
             </div>
 
-            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 text-sm text-stone-700 space-y-2">
+            <div class="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-1.5">
+                <label for="friend-temple-input" class="block text-xs font-bold text-red-950">🏮 輸入受贈友宮 / 堂社名稱（選填）：</label>
+                <input type="text" id="friend-temple-input" oninput="updateCustomShareMessage()" placeholder="例如：大甲鎮瀾宮、鹿港天后宮、北港朝天宮..." class="w-full bg-white border border-amber-400 rounded-lg px-3 py-1.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-red-700">
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-sm text-stone-700 space-y-1.5">
                 <p class="font-bold text-amber-950 text-xs">📋 結緣分享敬語預覽：</p>
                 <textarea id="share-message-box" rows="4" readonly class="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-stone-700 leading-relaxed focus:outline-none resize-none"></textarea>
             </div>
 
-            <!-- 四大分享管道按鈕群：LINE、Instagram、E-mail、複製連結 -->
             <div class="grid grid-cols-2 gap-3">
                 <a id="line-share-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-[#06C755] hover:bg-[#05b34c] active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
-                    <span>💬</span>
-                    <span>分享至 LINE</span>
+                    <span>💬</span><span>分享至 LINE</span>
                 </a>
                 <button type="button" onclick="shareToInstagram()" class="bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] hover:opacity-95 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
-                    <span>📸</span>
-                    <span>分享至 IG</span>
+                    <span>📸</span><span>分享至 IG</span>
                 </button>
                 <a id="email-share-link" href="#" class="bg-sky-700 hover:bg-sky-600 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
-                    <span>✉️</span>
-                    <span>E-mail 寄送</span>
+                    <span>✉️</span><span>E-mail 寄送</span>
                 </a>
                 <button onclick="copyShareText()" id="copy-share-btn" class="bg-amber-800 hover:bg-amber-700 active:scale-95 text-amber-50 font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
-                    <span>📋</span>
-                    <span id="copy-share-text">複製結緣連結</span>
+                    <span>📋</span><span id="copy-share-text">複製結緣連結</span>
                 </button>
             </div>
             <p id="share-modal-toast" class="hidden text-center text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg py-2 px-3"></p>
@@ -897,6 +906,33 @@
     <!-- JavaScript 核心邏輯控制 (公開自由版，無需登入驗證即可直接使用) -->
     <script>
         // ==========================================
+        // --- 0-0. 友宮外交 URL 參數 (?to=友宮名稱) 初始化 ---
+        // ==========================================
+        let targetFriendTemple = "";
+        (function initDiplomaticParams() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const toParam = (params.get('to') || '').trim();
+                if (toParam) {
+                    targetFriendTemple = toParam;
+                    const banner = document.getElementById('top-diplomatic-banner');
+                    const giftCard = document.getElementById('diplomatic-gift-card');
+                    const giftHeading = document.getElementById('diplomatic-temple-heading');
+                    const svgTopTag = document.getElementById('svg-top-temple-tag');
+                    if (banner) {
+                        banner.innerHTML = `🏮 臺中明德宮天聖堂 敬賀 <span class="text-white underline decoration-amber-300 underline-offset-4">【${toParam}】</span> 聖務昌隆 · 恭獻《天上聖母經》共修結緣 🌊`;
+                    }
+                    if (giftCard) giftCard.classList.remove('hidden');
+                    if (giftHeading) giftHeading.textContent = `敬賀【${toParam}】聖務昌隆 · 道誼長存`;
+                    if (svgTopTag) {
+                        svgTopTag.textContent = `臺中明德宮天聖堂 敬賀【${toParam}】`;
+                        if (toParam.length > 8) svgTopTag.setAttribute('font-size', '16');
+                    }
+                }
+            } catch (e) {}
+        })();
+
+        // ==========================================
         // --- 0. 著作權與防程式碼側窺安全防護 (F12 / DevTools 攔截) ---
         // ==========================================
         let antiInspectLocked = false;
@@ -914,7 +950,7 @@
         function attemptUnlockAntiInspect() {
             const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
             const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
-            if (widthDiff > 210 || heightDiff > 230) {
+            if (widthDiff > 320 || heightDiff > 260) {
                 return;
             }
             antiInspectLocked = false;
@@ -929,77 +965,31 @@
             return false;
         }
 
-        (function initAntiInspectGuards() {
-            document.addEventListener('keydown', function (e) {
-                const key = (e.key || '').toUpperCase();
-                const isF12 = key === 'F12' || e.keyCode === 123;
-                const isDevShortcut = (e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'J', 'C', 'K'].includes(key);
-                const isViewSourceOrSave = (e.ctrlKey || e.metaKey) && !e.shiftKey && ['U', 'S'].includes(key);
-
-                if (isF12 || isDevShortcut || isViewSourceOrSave) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (isF12 || isDevShortcut) triggerAntiInspectLock();
-                    return false;
-                }
-            }, true);
-
-            const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-            if (!isMobileDevice) {
-                setInterval(() => {
-                    if (antiInspectLocked) return;
-                    const widthDiff = window.outerWidth > 0 ? (window.outerWidth - window.innerWidth) : 0;
-                    const heightDiff = window.outerHeight > 0 ? (window.outerHeight - window.innerHeight) : 0;
-                    if (widthDiff > 210 || heightDiff > 230) triggerAntiInspectLock();
-                }, 1200);
+        document.addEventListener('keydown', function (e) {
+            const key = (e.key || '').toUpperCase();
+            if (key === 'F12' || e.keyCode === 123 || ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'J', 'C', 'K'].includes(key)) || ((e.ctrlKey || e.metaKey) && !e.shiftKey && ['U', 'S'].includes(key))) {
+                e.preventDefault();
+                triggerAntiInspectLock();
             }
-        })();
+        }, true);
 
         // ==========================================
-        // --- 0-1. 懸浮設定面板可視範圍邊界防裁切 ---
+        // --- 0-1. 懸浮設定面板可視範圍邊界防裁切與拖曳 ---
         // ==========================================
         function clampFloatingContainerToViewport() {
             const container = document.getElementById('floating-control-container');
             if (!container) return;
             const rect = container.getBoundingClientRect();
             const pad = 8;
-            const topHeaderHeight = document.getElementById('main-top-header')?.offsetHeight || 0;
-            const minTop = Math.max(pad, topHeaderHeight + 6);
-            let nextLeft = rect.left;
-            let nextTop = rect.top;
-            let changed = false;
-
-            if (rect.right > window.innerWidth - pad) {
-                nextLeft = Math.max(pad, window.innerWidth - rect.width - pad);
-                changed = true;
-            }
-            if (rect.left < pad) {
-                nextLeft = pad;
-                changed = true;
-            }
-            if (rect.bottom > window.innerHeight - pad) {
-                nextTop = Math.max(minTop, window.innerHeight - rect.height - pad);
-                changed = true;
-            }
-            if (rect.top < minTop) {
-                nextTop = minTop;
-                changed = true;
-            }
-
-            if (changed) {
-                container.style.right = 'auto';
-                container.style.bottom = 'auto';
-                container.style.left = nextLeft + 'px';
-                container.style.top = nextTop + 'px';
-            }
-
-            if (nextLeft + rect.width / 2 < window.innerWidth / 2) {
-                container.classList.remove('items-end');
-                container.classList.add('items-start');
-            } else {
-                container.classList.remove('items-start');
-                container.classList.add('items-end');
-            }
+            const minTop = Math.max(pad, (document.getElementById('main-top-header')?.offsetHeight || 0) + 6);
+            let nextLeft = Math.min(Math.max(pad, rect.left), Math.max(pad, window.innerWidth - rect.width - pad));
+            let nextTop = Math.min(Math.max(minTop, rect.top), Math.max(minTop, window.innerHeight - rect.height - pad));
+            container.style.right = 'auto';
+            container.style.bottom = 'auto';
+            container.style.left = nextLeft + 'px';
+            container.style.top = nextTop + 'px';
+            container.classList.toggle('items-start', nextLeft + rect.width / 2 < window.innerWidth / 2);
+            container.classList.toggle('items-end', nextLeft + rect.width / 2 >= window.innerWidth / 2);
         }
 
         function toggleTtsSettings() {
@@ -1007,22 +997,15 @@
             const container = document.getElementById('floating-control-container');
             const bar = document.getElementById('floating-tts-bar');
             if (!panel) return;
-
             const willOpen = panel.classList.contains('hidden');
             panel.classList.toggle('hidden');
-
             if (willOpen && container && bar) {
-                const barRect = bar.getBoundingClientRect();
-                if (barRect.top < window.innerHeight * 0.45) {
-                    container.insertBefore(bar, panel);
-                } else {
-                    container.insertBefore(panel, bar);
-                }
+                if (bar.getBoundingClientRect().top < window.innerHeight * 0.45) container.insertBefore(bar, panel);
+                else container.insertBefore(panel, bar);
                 requestAnimationFrame(clampFloatingContainerToViewport);
             }
         }
 
-        // 點擊設定面板外部任意處自動收合設定，避免擋住畫面
         document.addEventListener('pointerdown', function(e) {
             const panel = document.getElementById('tts-settings-panel');
             const container = document.getElementById('floating-control-container');
@@ -1031,203 +1014,68 @@
             }
         });
 
-        // ==========================================
-        // --- 5. 懸浮控制台自由拖曳邏輯 ---
-        // ==========================================
         (function initDraggableFloatingControl() {
             const container = document.getElementById('floating-control-container');
             const dragHandle = document.getElementById('floating-tts-bar');
             const panelHeaderHandle = document.getElementById('tts-settings-header');
             if (!container || !dragHandle) return;
-
-            let isDragging = false;
-            let hasMoved = false;
-            let startX = 0, startY = 0;
-            let initialLeft = 0, initialTop = 0;
+            let isDragging = false, hasMoved = false, startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
             function onDragStart(e) {
                 if (e.target && e.target.closest('button')) return;
                 const point = e.touches ? e.touches[0] : e;
-                startX = point.clientX;
-                startY = point.clientY;
+                startX = point.clientX; startY = point.clientY;
                 const rect = container.getBoundingClientRect();
-                initialLeft = rect.left;
-                initialTop = rect.top;
-                isDragging = true;
-                hasMoved = false;
+                initialLeft = rect.left; initialTop = rect.top;
+                isDragging = true; hasMoved = false;
             }
-
             function onDragMove(e) {
                 if (!isDragging) return;
                 const point = e.touches ? e.touches[0] : e;
-                const dx = point.clientX - startX;
-                const dy = point.clientY - startY;
-
+                const dx = point.clientX - startX, dy = point.clientY - startY;
                 if (!hasMoved && Math.hypot(dx, dy) < 5) return;
                 hasMoved = true;
-
                 if (e.cancelable) e.preventDefault();
-
                 const rect = container.getBoundingClientRect();
-                const topHeaderHeight = document.getElementById('main-top-header')?.offsetHeight || 0;
-                const minTop = Math.max(8, topHeaderHeight + 6);
-                const maxLeft = window.innerWidth - rect.width - 8;
-                const maxTop = window.innerHeight - rect.height - 8;
-
-                const nextLeft = Math.min(Math.max(8, initialLeft + dx), Math.max(8, maxLeft));
-                const nextTop = Math.min(Math.max(minTop, initialTop + dy), Math.max(minTop, maxTop));
-
-                container.style.right = 'auto';
-                container.style.bottom = 'auto';
-                container.style.left = nextLeft + 'px';
-                container.style.top = nextTop + 'px';
-
-                if (nextLeft + rect.width / 2 < window.innerWidth / 2) {
-                    container.classList.remove('items-end');
-                    container.classList.add('items-start');
-                } else {
-                    container.classList.remove('items-start');
-                    container.classList.add('items-end');
-                }
+                const minTop = Math.max(8, (document.getElementById('main-top-header')?.offsetHeight || 0) + 6);
+                const nextLeft = Math.min(Math.max(8, initialLeft + dx), Math.max(8, window.innerWidth - rect.width - 8));
+                const nextTop = Math.min(Math.max(minTop, initialTop + dy), Math.max(minTop, window.innerHeight - rect.height - 8));
+                container.style.right = 'auto'; container.style.bottom = 'auto';
+                container.style.left = nextLeft + 'px'; container.style.top = nextTop + 'px';
             }
-
-            function onDragEnd() {
-                if (!isDragging) return;
-                isDragging = false;
-            }
-
-            container.addEventListener('click', function(e) {
-                if (hasMoved) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    hasMoved = false;
-                }
-            }, true);
-
-            [dragHandle, panelHeaderHandle].forEach(handle => {
-                if (!handle) return;
-                handle.addEventListener('mousedown', onDragStart);
-                handle.addEventListener('touchstart', onDragStart, { passive: true });
-            });
-            window.addEventListener('mousemove', onDragMove);
-            window.addEventListener('mouseup', onDragEnd);
-            window.addEventListener('touchmove', onDragMove, { passive: false });
-            window.addEventListener('touchend', onDragEnd);
+            function onDragEnd() { isDragging = false; }
+            container.addEventListener('click', function(e) { if (hasMoved) { e.stopPropagation(); e.preventDefault(); hasMoved = false; } }, true);
+            [dragHandle, panelHeaderHandle].forEach(h => { if (h) { h.addEventListener('mousedown', onDragStart); h.addEventListener('touchstart', onDragStart, { passive: true }); } });
+            window.addEventListener('mousemove', onDragMove); window.addEventListener('mouseup', onDragEnd);
+            window.addEventListener('touchmove', onDragMove, { passive: false }); window.addEventListener('touchend', onDragEnd);
             window.addEventListener('resize', clampFloatingContainerToViewport);
         })();
 
         // ==========================================
-        // --- 1. 單檔獨立內建 PWA 核心 ---
+        // --- 1. 單檔獨立內建 PWA 核心 & 計次器初始化 ---
         // ==========================================
+        const CANONICAL_SCRIPTURE_URL = 'https://taichungmingdetemple.github.io/mingde/mingde_mazu.html';
+
         (function initStandalonePWA() {
             try {
-                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                    <rect width="512" height="512" rx="96" fill="#7f1d1d"/>
-                    <rect x="24" y="24" width="464" height="464" rx="76" fill="none" stroke="#f59e0b" stroke-width="12"/>
-                    <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-weight="bold" font-size="260" fill="#fde68a">聖</text>
-                </svg>`;
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#7f1d1d"/><rect x="24" y="24" width="464" height="464" rx="76" fill="none" stroke="#f59e0b" stroke-width="12"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-weight="bold" font-size="260" fill="#fde68a">聖</text></svg>`;
                 const iconDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
-
                 const appleIconLink = document.getElementById('apple-touch-icon-link');
                 if (appleIconLink) appleIconLink.href = iconDataUri;
-
-                const manifestObj = {
-                    name: "天上聖母經（媽祖經）｜臺中明德宮鸞生黃國豐製作",
-                    short_name: "天上聖母經",
-                    start_url: window.location.href,
-                    scope: "./",
-                    display: "standalone",
-                    background_color: "#fcfbf7",
-                    theme_color: "#7f1d1d",
-                    icons: [
-                        {
-                            src: iconDataUri,
-                            sizes: "192x192 512x512",
-                            type: "image/svg+xml",
-                            purpose: "any maskable"
-                        }
-                    ]
-                };
-                const manifestDataUri = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
+                const manifestObj = { name: "天上聖母經（媽祖經）｜臺中明德宮鸞生黃國豐製作", short_name: "天上聖母經", start_url: CANONICAL_SCRIPTURE_URL, scope: "./", display: "standalone", background_color: "#fcfbf7", theme_color: "#7f1d1d", icons: [{ src: iconDataUri, sizes: "192x192 512x512", type: "image/svg+xml", purpose: "any maskable" }] };
                 const manifestLink = document.getElementById('inline-manifest');
-                if (manifestLink) manifestLink.href = manifestDataUri;
-
-                if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-                    const swCode = `
-                        const CACHE_NAME = 'mazu-scripture-public-v1';
-                        self.addEventListener('install', (e) => {
-                            self.skipWaiting();
-                            e.waitUntil(
-                                caches.open(CACHE_NAME).then((cache) => cache.add(self.registration.scope).catch(() => {}))
-                            );
-                        });
-                        self.addEventListener('activate', (e) => {
-                            e.waitUntil(self.clients.claim());
-                        });
-                        self.addEventListener('fetch', (e) => {
-                            if (e.request.method !== 'GET') return;
-                            e.respondWith(
-                                fetch(e.request).then((res) => {
-                                    const copy = res.clone();
-                                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy)).catch(() => {});
-                                    return res;
-                                }).catch(() => caches.match(e.request))
-                            );
-                        });
-                    `;
-                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(swBlob);
-                    navigator.serviceWorker.register(swUrl).catch(() => {});
-                }
-            } catch (err) {
-                console.warn('PWA 初始化提示：', err);
-            }
+                if (manifestLink) manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
+            } catch (err) {}
         })();
 
-        // ==========================================
-        // --- 1-1. PWA 安裝至桌面彈窗與原生提示控制 ---
-        // ==========================================
         let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstallPrompt = e; document.getElementById('android-native-install-box')?.classList.remove('hidden'); });
+        function openInstallModal() { document.getElementById('install-modal')?.classList.remove('hidden'); }
+        function closeInstallModal() { document.getElementById('install-modal')?.classList.add('hidden'); }
+        async function triggerNativeInstallPrompt() { if (!deferredInstallPrompt) return; deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt = null; closeInstallModal(); }
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredInstallPrompt = e;
-            const nativeBox = document.getElementById('android-native-install-box');
-            if (nativeBox) nativeBox.classList.remove('hidden');
-        });
-
-        function openInstallModal() {
-            const modal = document.getElementById('install-modal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeInstallModal() {
-            const modal = document.getElementById('install-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        async function triggerNativeInstallPrompt() {
-            if (!deferredInstallPrompt) return;
-            deferredInstallPrompt.prompt();
-            const { outcome } = await deferredInstallPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredInstallPrompt = null;
-                const nativeBox = document.getElementById('android-native-install-box');
-                if (nativeBox) nativeBox.classList.add('hidden');
-                closeInstallModal();
-            }
-        }
-
-        // ==========================================
-        // --- 2. 誦經計次器與本機記憶管理 ---
-        // ==========================================
         const CHANT_STORAGE_KEY = 'mazu_scripture_chant_stats_v1';
-        let chantStats = {
-            date: new Date().toISOString().slice(0, 10),
-            today: 0,
-            total: 0
-        };
-
+        let chantStats = { date: new Date().toISOString().slice(0, 10), today: 0, total: 0 };
         function loadChantStats() {
             try {
                 const raw = window.localStorage.getItem(CHANT_STORAGE_KEY);
@@ -1241,83 +1089,41 @@
             } catch (e) {}
             renderChantStats();
         }
-
-        function saveChantStats() {
-            try {
-                window.localStorage.setItem(CHANT_STORAGE_KEY, JSON.stringify(chantStats));
-            } catch (e) {}
-        }
-
+        function saveChantStats() { try { window.localStorage.setItem(CHANT_STORAGE_KEY, JSON.stringify(chantStats)); } catch (e) {} }
         function renderChantStats() {
             const todayEl = document.getElementById('today-chant-count');
             const totalEl = document.getElementById('total-chant-count');
             if (todayEl) todayEl.innerText = chantStats.today;
             if (totalEl) totalEl.innerText = chantStats.total;
         }
-
         function incrementChantCount(step = 1) {
             const todayStr = new Date().toISOString().slice(0, 10);
-            if (chantStats.date !== todayStr) {
-                chantStats.date = todayStr;
-                chantStats.today = 0;
-            }
-            chantStats.today += step;
-            chantStats.total += step;
-            saveChantStats();
-            renderChantStats();
+            if (chantStats.date !== todayStr) { chantStats.date = todayStr; chantStats.today = 0; }
+            chantStats.today += step; chantStats.total += step;
+            saveChantStats(); renderChantStats();
         }
-
-        function openResetCounterModal() {
-            const modal = document.getElementById('reset-counter-modal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeResetCounterModal() {
-            const modal = document.getElementById('reset-counter-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function resetChantCount(mode) {
-            chantStats.today = 0;
-            if (mode === 'all') {
-                chantStats.total = 0;
-            }
-            saveChantStats();
-            renderChantStats();
-            closeResetCounterModal();
-        }
-
+        function openResetCounterModal() { document.getElementById('reset-counter-modal')?.classList.remove('hidden'); }
+        function closeResetCounterModal() { document.getElementById('reset-counter-modal')?.classList.add('hidden'); }
+        function resetChantCount(mode) { chantStats.today = 0; if (mode === 'all') chantStats.total = 0; saveChantStats(); renderChantStats(); closeResetCounterModal(); }
         loadChantStats();
 
         // ==========================================
-        // --- 3. 多管道分享結緣功能 (LINE / IG / E-mail / 複製) ---
+        // --- 3. 友宮外交分享結緣功能 ---
         // ==========================================
         function getSharePayload() {
-            const shareUrl = window.location.href;
-            const shareTitle = '《天上聖母經》（媽祖經）｜臺中明德宮鸞生黃國豐製作結緣版';
-            const shareMessageOnly = `敬邀恭誦《天上聖母經》（媽祖經）數位共修結緣版（臺中明德宮鸞生 黃國豐製作 · 敬獻十方信眾恭誦）\n支援全篇注音輔讀、字體放大、循環語音同步帶讀計次與每日聖母靈感籤卡，免登入直接開啟，歡迎轉發廣結善緣：`;
+            const inputVal = (document.getElementById('friend-temple-input')?.value || targetFriendTemple || '').trim();
+            const shareUrl = inputVal ? `${CANONICAL_SCRIPTURE_URL}?to=${encodeURIComponent(inputVal)}` : CANONICAL_SCRIPTURE_URL;
+            const templeGreeting = inputVal ? `敬賀【${inputVal}】聖務昌隆、道誼長存！\n` : '';
+            const shareTitle = inputVal
+                ? `臺中明德宮天聖堂 敬賀【${inputVal}】《天上聖母經》結緣本`
+                : '《天上聖母經》（媽祖經）｜臺中明德宮天聖堂結緣版';
+            const shareMessageOnly = `${templeGreeting}臺中明德宮天聖堂（三曹對案直轄鸞堂）謹製《天上聖母經》數位共修結緣本，附全篇注音輔讀、字體放大、循環語音同步帶讀計次與每日聖母靈感籤卡，免登入直接開啟，敬獻貴宮與十方善信共修結緣：`;
             const fullShareText = `${shareMessageOnly}\n${shareUrl}`;
             return { shareUrl, shareTitle, shareMessageOnly, fullShareText };
         }
 
-        function showShareModalToast(msg) {
-            const toastEl = document.getElementById('share-modal-toast');
-            if (!toastEl) return;
-            toastEl.textContent = msg;
-            toastEl.classList.remove('hidden');
-            clearTimeout(toastEl._timer);
-            toastEl._timer = setTimeout(() => {
-                toastEl.classList.add('hidden');
-            }, 4000);
-        }
-
-        function shareScripture() {
-            openShareModal();
-        }
-
-        function openShareModal() {
+        function updateCustomShareMessage() {
             const { shareTitle, fullShareText } = getSharePayload();
-            const modal = document.getElementById('share-modal');
             const msgBox = document.getElementById('share-message-box');
             const lineLink = document.getElementById('line-share-link');
             const emailLink = document.getElementById('email-share-link');
@@ -1325,7 +1131,14 @@
             if (msgBox) msgBox.value = fullShareText;
             if (lineLink) lineLink.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(fullShareText);
             if (emailLink) emailLink.href = `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(fullShareText)}`;
-            if (modal) modal.classList.remove('hidden');
+        }
+
+        function shareScripture() {
+            const inputEl = document.getElementById('friend-temple-input');
+            if (inputEl && !inputEl.value && targetFriendTemple) inputEl.value = targetFriendTemple;
+            document.getElementById('share-modal-toast')?.classList.add('hidden');
+            updateCustomShareMessage();
+            document.getElementById('share-modal')?.classList.remove('hidden');
         }
 
         function closeShareModal() {
@@ -1335,10 +1148,12 @@
 
         function shareToInstagram() {
             copyShareText(true);
-            showShareModalToast('📸 已複製結緣敬語與連結！即將開啟 Instagram，您可直接貼上於限時動態或私訊分享。');
-            setTimeout(() => {
-                window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-            }, 600);
+            const toastEl = document.getElementById('share-modal-toast');
+            if (toastEl) {
+                toastEl.textContent = '📸 已複製結緣敬語與專屬連結！即將開啟 Instagram，可直接貼上分享。';
+                toastEl.classList.remove('hidden');
+            }
+            setTimeout(() => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer'), 600);
         }
 
         function copyShareText(silent = false) {
@@ -1584,11 +1399,13 @@
             if (!isSpeaking || isPaused) return;
 
             if (currentChunkIndex >= originalChunks.length) {
+                // 每完成一整遍經文，自動將累計誦經計次 +1
                 incrementChantCount(1);
 
                 const loopCheckbox = document.getElementById('loop-mode-cb');
                 const targetLimit = parseInt(document.getElementById('loop-target-select')?.value || '0', 10);
 
+                // 若勾選自動循環，且尚未達到設定遍數上限
                 if (loopCheckbox && loopCheckbox.checked && (targetLimit === 0 || loopCount < targetLimit)) {
                     let loopStartIndex = originalChunks.findIndex(chunk => chunk.element.hasAttribute('data-loop-start'));
                     if (loopStartIndex !== -1) {
@@ -1847,11 +1664,14 @@
             const subMap = {
                 '早安': '早安 · 慈航平安',
                 '日安': '日安 · 諸事順遂',
-                '晚安': '晚安 · 闔家安康'
+                '晚安': '晚安 · 闔家安康',
+                '恭祝聖誕千秋': '恭祝 聖誕千秋',
+                '恭賀宮慶圓滿': '恭賀 宮慶圓滿',
+                '參香道誼長存': '參香 道誼長存'
             };
             if (titleEl) titleEl.textContent = subMap[greeting] || `${greeting} · 慈航平安`;
-            if (shareImgBtnText) shareImgBtnText.innerText = `直接分享${greeting}圖片`;
-            if (dlBtnText) dlBtnText.innerText = `下載${greeting}籤卡圖檔`;
+            if (shareImgBtnText) shareImgBtnText.innerText = `直接分享${greeting}圖卡`;
+            if (dlBtnText) dlBtnText.innerText = `下載${greeting}圖檔`;
             if (copyBtnText) copyBtnText.innerText = `複製${greeting}祝福文字`;
             if (timeBadgeEl) {
                 if (isAuto) {
@@ -1861,7 +1681,7 @@
                     timeBadgeEl.textContent = `目前 ${hh}:${mm} → 自動套用「${greeting}」`;
                     timeBadgeEl.classList.remove('hidden');
                 } else {
-                    timeBadgeEl.textContent = `已手動指定「${greeting}」`;
+                    timeBadgeEl.textContent = `已選擇「${greeting}」`;
                     timeBadgeEl.classList.remove('hidden');
                 }
             }
@@ -1967,14 +1787,14 @@
         function copyOracleText() {
             if (!currentLot) return;
             const { greeting } = getResolvedGreeting();
-            const pageUrl = window.location.href;
+            const { shareUrl } = getSharePayload();
             const text = `【${greeting} · 天上聖母《媽祖經》每日慈悲指引籤】\n` +
-                         `臺中明德宮鸞生 黃國豐製作 · 敬獻十方信眾恭誦\n\n` +
+                         `臺中明德宮天聖堂 敬贈友宮道誼\n\n` +
                          `🏮 ${currentLot.num}\n` +
                          `📜 聖訓：${currentLot.scripture}\n` +
                          `💡 慈示：${currentLot.modern.join('')}\n` +
                          `🔥 行動：${currentLot.action.join('')}\n\n` +
-                         `線上恭誦《天上聖母經》與求籤：\n${pageUrl}`;
+                         `線上恭誦《天上聖母經》與求籤：\n${shareUrl}`;
 
             const labelEl = document.getElementById('copy-text-btn-label');
             if (navigator.clipboard && navigator.clipboard.writeText) {
