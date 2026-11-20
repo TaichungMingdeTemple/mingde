@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <!-- 單檔獨立 PWA 設定 (不依賴外部 manifest.json 與圖示檔) -->
+    <link id="inline-manifest" rel="manifest" href="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="大悲神咒">
+    <meta name="theme-color" content="#831843">
+    <link id="apple-touch-icon-link" rel="apple-touch-icon" href="">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>千手千眼觀世音菩薩大悲咒｜臺中明德宮天聖堂 · 友宮共修結緣版</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts 思源宋體與思源黑體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        .hidden { display: none !important; }
+        button svg, a svg { width: 1rem; height: 1rem; max-width: 1.25rem; max-height: 1.25rem; flex-shrink: 0; }
+        #dabei-morning-svg { width: 100%; height: auto; max-width: 100%; display: block; }
+
+        html, body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fcfaf9;
+            color: #2b2b2b;
+            overflow-x: clip;
+            scroll-behavior: smooth;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .serif-font {
+            font-family: 'Noto Serif TC', serif;
+        }
+        ruby {
+            ruby-position: over;
+            margin: 0 0.05em;
+        }
+        rt {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.5em;
+            color: #9d174d;
+            font-weight: 500;
+            user-select: none;
+        }
+        .hide-zhuyin rt {
+            display: none !important;
+        }
+
+        /* 正在朗讀的段落高亮效果 (卡拉OK模式) */
+        .reading-highlight {
+            background-color: rgba(254, 205, 211, 0.65);
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease-in-out;
+            padding: 0.25rem 0.5rem;
+            margin: -0.25rem -0.5rem;
+            box-shadow: 0 0 12px rgba(219, 39, 119, 0.3);
+        }
+
+        /* 動態字體縮放控制 */
+        #scripture-content {
+            --font-scale: 1;
+        }
+        #scripture-content .serif-font {
+            font-size: calc(1.25rem * var(--font-scale));
+            line-height: 1.95;
+        }
+        @media (min-width: 768px) {
+            #scripture-content .serif-font {
+                font-size: calc(1.5rem * var(--font-scale));
+            }
+        }
+        #scripture-content h3.serif-font {
+            font-size: calc(1.5rem * var(--font-scale));
+        }
+        @media (min-width: 768px) {
+            #scripture-content h3.serif-font {
+                font-size: calc(1.875rem * var(--font-scale));
+            }
+        }
+        #scripture-content h4 {
+            font-size: calc(1.2rem * var(--font-scale));
+        }
+        @media (min-width: 768px) {
+            #scripture-content h4 {
+                font-size: calc(1.4rem * var(--font-scale));
+            }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .avoid-break { page-break-inside: avoid; }
+            .shadow-lg, .shadow-md, .shadow-sm { box-shadow: none !important; }
+            .reading-highlight { background-color: transparent !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 頂部導覽控制列 -->
+    <header id="main-top-header" class="no-print sticky top-0 z-40 bg-pink-950/95 backdrop-blur-md text-amber-50 shadow-lg border-b-2 border-amber-400/80">
+        <!-- 友宮致贈橫幅（支援 ?to=友宮名稱 動態顯示） -->
+        <div class="bg-gradient-to-r from-pink-900 via-rose-900 to-pink-900 border-b border-amber-400/40 px-3 py-1.5 text-center">
+            <p id="top-diplomatic-banner" class="serif-font text-xs sm:text-sm font-bold tracking-wider text-amber-200">
+                🪷 臺中明德宮天聖堂（三曹對案直轄鸞堂）· 敬獻全台友宮與十方善信恭誦《大悲神咒》 🏮
+            </p>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-3 md:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 md:gap-4">
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <span class="text-xl md:text-2xl">🪷</span>
+                <div>
+                    <div class="flex flex-wrap items-center gap-1.5 md:gap-2">
+                        <h1 class="serif-font font-black text-base md:text-xl tracking-wide text-amber-100">千手千眼觀世音菩薩大悲咒</h1>
+                        <a href="https://taichungmingdetemple.github.io/fortune/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 bg-amber-300/20 hover:bg-amber-300/30 text-amber-200 hover:text-white border border-amber-400/60 px-2.5 py-0.5 rounded-full text-[11px] md:text-xs font-medium transition shadow-sm" title="前往認識臺中明德宮三曹對案直轄鸞堂與AI科技化應用">
+                            <span>🏮 認識三曹對案直轄鸞堂</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 md:gap-2.5 w-full md:w-auto justify-between md:justify-end">
+                <!-- 語音朗讀按鈕組 -->
+                <div class="flex items-center shadow-sm">
+                    <button id="tts-btn" onclick="toggleSpeech()" class="bg-amber-600 hover:bg-amber-500 text-pink-950 px-3 md:px-3.5 py-1.5 rounded-l-lg text-xs md:text-sm font-bold transition flex items-center space-x-1 border border-amber-300 border-r-0">
+                        <svg id="tts-icon-play" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 10v4a2 2 0 002 2h3l5 5V3l-5 5H7a2 2 0 00-2 2z"></path></svg>
+                        <svg id="tts-icon-pause" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="tts-btn-text">語音朗讀</span>
+                    </button>
+                    <button id="tts-stop-btn" onclick="stopSpeech()" class="hidden bg-red-950 hover:bg-red-900 text-amber-100 px-2.5 py-1.5 text-xs md:text-sm font-medium transition border border-amber-300 border-r-0 border-l-0" title="停止">⏹️</button>
+                    <button onclick="toggleTtsSettings()" class="bg-amber-700 hover:bg-amber-600 text-amber-50 px-2.5 py-1.5 rounded-r-lg text-xs md:text-sm font-medium transition border border-amber-300 focus:outline-none" title="語音設定">⚙️</button>
+                </div>
+
+                <!-- 注音開關 -->
+                <button id="toggle-zhuyin-btn" onclick="toggleZhuyin()" class="bg-pink-900 hover:bg-pink-800 text-amber-100 px-2.5 md:px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium transition flex items-center space-x-1 border border-pink-700">
+                    <span>ㄅㄆㄇ</span>
+                    <span id="zhuyin-status-text" class="hidden lg:inline">注音：顯示中</span>
+                </button>
+
+                <!-- 字體縮放 -->
+                <div class="flex items-center shadow-sm" title="調整經文字體大小">
+                    <button onclick="changeFontSize(-0.15)" class="bg-pink-900 hover:bg-pink-800 text-amber-100 px-2.5 py-1.5 rounded-l-lg text-xs md:text-sm font-bold transition border border-pink-700 border-r-0">字-</button>
+                    <span id="font-size-label" class="bg-pink-950 text-amber-200 px-2 py-1.5 text-xs font-mono border-t border-b border-pink-700 select-none">100%</span>
+                    <button onclick="changeFontSize(0.15)" class="bg-pink-900 hover:bg-pink-800 text-amber-100 px-2.5 py-1.5 rounded-r-lg text-xs md:text-sm font-bold transition border border-pink-700 border-l-0">字+</button>
+                </div>
+
+                <!-- 讀咒遍數徽章 -->
+                <div id="loop-counter-badge" class="hidden bg-pink-900 text-amber-300 px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-bold border border-amber-400/70 shadow-inner flex items-center space-x-1">
+                    <span>第 <span id="loop-count-text">1</span> 遍</span>
+                </div>
+
+                <!-- 分享結緣 -->
+                <button onclick="shareScripture()" class="bg-emerald-700 hover:bg-emerald-600 text-amber-50 font-bold px-3 py-1.5 rounded-lg text-xs md:text-sm shadow-md transition flex items-center space-x-1 border border-emerald-500/70" title="分享經本與結緣敬語給友宮善信">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                    <span>友宮<span class="hidden sm:inline">結緣</span></span>
+                </button>
+
+                <!-- 輸出 PDF -->
+                <button onclick="window.print()" class="hidden md:flex bg-amber-400 hover:bg-amber-300 text-pink-950 font-bold px-3.5 py-1.5 rounded-lg text-sm shadow-md transition items-center space-x-1">
+                    <span>PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 全域懸浮控制台 (支援自由拖曳移動位置) -->
+    <div id="floating-control-container" class="no-print fixed bottom-5 right-4 z-50 flex flex-col items-end space-y-2.5 touch-none select-none">
+        <div id="tts-settings-panel" class="hidden w-[calc(100vw-2rem)] max-w-sm bg-pink-950/95 backdrop-blur-md text-amber-100 rounded-2xl shadow-2xl border-2 border-amber-400/70 p-4 space-y-3.5 text-xs md:text-sm transition-all touch-auto">
+            <div class="flex items-center justify-between border-b border-pink-800 pb-2">
+                <span class="font-bold text-amber-300 flex items-center space-x-1.5"><span>⚙️</span><span>誦咒語音與循環設定</span></span>
+                <button onclick="toggleTtsSettings()" class="text-amber-300 hover:text-white bg-pink-900 px-2.5 py-1 rounded-lg font-bold">✕ 關閉</button>
+            </div>
+            <div class="space-y-1.5">
+                <label class="block text-amber-200 font-bold">📱 朗讀聲音：</label>
+                <select id="voice-select" class="w-full text-black rounded-lg px-2.5 py-1.5 bg-amber-50 border border-amber-300 focus:outline-none text-xs">
+                    <option value="">正在載入系統聲音...</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 gap-2.5">
+                <div class="flex items-center justify-between bg-pink-900/50 px-3 py-2 rounded-xl border border-pink-800">
+                    <label class="whitespace-nowrap text-amber-200 font-bold">⏩ 語速：</label>
+                    <input type="range" id="rate-select" min="0.5" max="2.5" step="0.1" value="1.2" class="w-32 accent-amber-400">
+                    <span id="rate-display" class="w-9 text-right font-mono text-amber-300 font-bold">1.20</span>
+                </div>
+                <div class="flex items-center justify-between bg-pink-900/50 px-3 py-2 rounded-xl border border-pink-800">
+                    <label class="whitespace-nowrap text-amber-200 font-bold">🎵 音調：</label>
+                    <input type="range" id="pitch-select" min="0.5" max="1.8" step="0.1" value="1.0" class="w-32 accent-amber-400">
+                    <span class="text-[11px] text-pink-200">慈悲沉穩</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-0.5">
+                <div class="flex items-center bg-pink-900/70 rounded-xl border border-pink-700 p-1">
+                    <button onclick="changeFontSize(-0.15)" class="px-2.5 py-1 text-amber-100 font-bold hover:bg-pink-800 rounded-lg">字-</button>
+                    <span class="px-2 font-mono text-amber-300 text-xs">字體</span>
+                    <button onclick="changeFontSize(0.15)" class="px-2.5 py-1 text-amber-100 font-bold hover:bg-pink-800 rounded-lg">字+</button>
+                </div>
+                <button onclick="toggleZhuyin()" class="flex-grow bg-amber-700 hover:bg-amber-600 text-amber-50 font-bold py-2 px-3 rounded-xl border border-amber-500/70 text-center">ㄅㄆㄇ 切換注音</button>
+            </div>
+            <div class="bg-pink-900/60 px-3 py-2.5 rounded-xl border border-pink-800 space-y-2">
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="loop-mode-cb" class="w-4 h-4 accent-amber-400 cursor-pointer" checked>
+                    <label for="loop-mode-cb" class="text-amber-200 font-bold cursor-pointer select-none">🔁 循環持咒 (接力重誦大悲神咒)</label>
+                </div>
+                <div class="flex items-center justify-between text-xs pl-6">
+                    <label for="loop-target-select" class="text-pink-200">目標遍數上限：</label>
+                    <select id="loop-target-select" class="bg-pink-950 text-amber-100 border border-pink-700 rounded-lg px-2 py-1 font-bold outline-none">
+                        <option value="0" selected>♾️ 無限循環</option>
+                        <option value="3">3 遍圓滿</option>
+                        <option value="7">7 遍圓滿</option>
+                        <option value="21">21 遍圓滿</option>
+                        <option value="49">49 遍圓滿</option>
+                        <option value="108">108 遍圓滿</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="floating-tts-bar" class="flex items-center bg-pink-950/95 backdrop-blur-md text-amber-50 rounded-full shadow-2xl border-2 border-amber-400/80 p-1.5 space-x-1.5 transition-shadow cursor-grab active:cursor-grabbing" title="按住可自由拖曳移動控制台位置">
+            <div class="pl-2 pr-1 text-amber-400/90 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path></svg>
+            </div>
+            <button onclick="toggleSpeech()" class="bg-amber-600 hover:bg-amber-500 active:scale-95 text-pink-950 font-bold px-4 py-2 rounded-full text-sm flex items-center space-x-1.5 shadow">
+                <span id="floating-tts-icon">▶️</span>
+                <span id="floating-tts-text">語音朗讀</span>
+            </button>
+            <button id="floating-stop-btn" onclick="stopSpeech()" class="hidden bg-stone-800 hover:bg-stone-700 active:scale-95 text-amber-200 font-bold px-3 py-2 rounded-full text-sm">⏹️</button>
+            <button onclick="toggleTtsSettings()" class="bg-pink-800 hover:bg-pink-700 active:scale-95 text-amber-100 px-3 py-2 rounded-full text-sm">⚙️</button>
+        </div>
+    </div>
+
+    <!-- 主內容區 -->
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-8">
+
+        <!-- 友宮專屬致贈賀匾（若網址帶有 ?to=友宮名稱 時自動顯示） -->
+        <div id="diplomatic-gift-card" class="hidden bg-gradient-to-r from-pink-950 via-rose-900 to-pink-950 text-amber-50 rounded-2xl shadow-lg border-2 border-amber-400 p-5 mb-6 text-center space-y-1.5">
+            <span class="inline-block bg-amber-300 text-pink-950 text-xs font-black px-3 py-0.5 rounded-full tracking-widest">臺中明德宮天聖堂 · 友宮道誼致贈賀禮</span>
+            <h3 id="diplomatic-temple-heading" class="serif-font text-xl md:text-2xl font-black text-amber-200 tracking-wide">敬賀 友宮 慈光普照 · 香火鼎盛</h3>
+            <p class="text-xs md:text-sm text-pink-100">謹以《千手千眼觀世音菩薩大悲神咒》數位共修結緣本敬獻貴宮，祈願觀音菩薩甘露遍灑、合境平安。</p>
+        </div>
+
+        <!-- 封面卡片 -->
+        <div class="bg-white rounded-2xl shadow-md border border-pink-200/80 p-6 md:p-10 mb-8 text-center relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-pink-100 rounded-full opacity-50 blur-xl pointer-events-none"></div>
+            <p class="text-pink-900 font-semibold tracking-widest text-sm md:text-base mb-2">千處祈求千處應 · 苦海常作度人舟</p>
+            <h2 class="serif-font font-black text-3xl md:text-5xl text-pink-950 tracking-wider mb-4">千手千眼觀世音菩薩大悲咒</h2>
+            <div class="w-24 h-1 bg-amber-500 mx-auto rounded-full mb-4"></div>
+            <p class="text-stone-600 text-sm md:text-base max-w-xl mx-auto mb-5">
+                完整收錄告文式、淨業真言、爐香讚、觀世音菩薩發願文、大悲心陀羅尼八十四句全字注音與完咒回向讚，便利十方善信與友宮隨心持誦。
+            </p>
+            <div class="no-print pt-1">
+                <a href="https://taichungmingdetemple.github.io/fortune/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-50 to-amber-50 hover:from-pink-100 hover:to-amber-100 text-pink-950 border border-pink-300 px-5 py-2.5 rounded-full text-sm font-bold shadow-sm transition group">
+                    <span>✨ 了解三曹對案直轄鸞堂 · 認識明德宮 AI 科技化宮廟應用</span>
+                    <span class="text-amber-700 group-hover:translate-x-1 transition-transform">➔</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 觀世音菩薩大悲甘露靈感籤 & 動態問候/友宮祝賀圖卡 -->
+        <section id="dabei-oracle-section" class="no-print bg-gradient-to-br from-pink-50 via-white to-amber-50/50 rounded-2xl shadow-lg border-2 border-pink-300/80 p-6 md:p-10 mb-8 relative overflow-hidden">
+            <div class="text-center max-w-2xl mx-auto space-y-3 mb-6">
+                <span class="inline-block bg-pink-950 text-amber-300 text-xs font-bold px-3 py-1 rounded-full tracking-widest">千手護持 · 甘露淨心指引</span>
+                <h3 class="serif-font text-2xl md:text-3xl font-black text-pink-950">恭請 大悲觀世音菩薩 賜予今日慈悲指引</h3>
+                <p class="text-stone-600 text-sm md:text-base">請先靜心深呼吸三次，默念「南無大慈大悲觀世音菩薩」三聲，抽取《大悲咒》智慧籤卡並可一鍵分享祝福圖卡。</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+                <button id="draw-lot-btn" onclick="drawDabeiLot()" class="w-full sm:w-auto bg-gradient-to-r from-pink-900 to-rose-800 hover:from-pink-800 hover:to-rose-700 text-amber-100 font-bold text-lg px-8 py-4 rounded-xl shadow-md hover:shadow-xl transition transform active:scale-95 flex items-center justify-center space-x-2 border border-amber-400/50">
+                    <span id="lot-shake-icon" class="text-2xl inline-block">🪷</span>
+                    <span id="draw-lot-btn-text">誠心求取今日大悲靈感指引</span>
+                </button>
+            </div>
+
+            <!-- 籤詩與動態 SVG 圖卡顯示區 -->
+            <div id="oracle-result-container" class="hidden transition-all duration-500 max-w-lg mx-auto">
+                <div class="mt-2 mb-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-pink-100/70 p-3 rounded-xl border border-pink-300 shadow-inner">
+                    <label for="greeting-select" class="text-sm font-bold text-pink-950 flex items-center space-x-1">
+                        <span>✏️</span><span>圖卡抬頭模式：</span>
+                    </label>
+                    <select id="greeting-select" onchange="updateGreetingText()" class="bg-white border-2 border-pink-500 text-pink-950 text-sm rounded-lg px-3.5 py-1.5 font-bold shadow-sm outline-none cursor-pointer">
+                        <option value="auto" selected>🕰️ 自動依時段 (早/日/晚安)</option>
+                        <option value="早安">🌅 日常：早安吉祥</option>
+                        <option value="日安">☀️ 日常：日安順遂</option>
+                        <option value="晚安">🌙 日常：晚安寧靜</option>
+                        <option value="恭祝聖誕千秋">🏮 外交：恭祝聖誕千秋</option>
+                        <option value="恭賀宮慶圓滿">🎊 外交：恭賀宮慶圓滿</option>
+                        <option value="參香道誼長存">🤝 外交：參香道誼長存</option>
+                    </select>
+                    <span id="auto-greeting-badge" class="text-xs bg-pink-900 text-amber-100 px-2.5 py-1 rounded-full font-medium shadow-xs">目前時段自動：早安</span>
+                </div>
+
+                <!-- 動態 SVG 畫布 -->
+                <div id="morning-card-wrapper" class="rounded-2xl overflow-hidden shadow-2xl border-4 border-amber-500 bg-pink-950 relative">
+                    <svg id="dabei-morning-svg" viewBox="0 0 600 820" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto block">
+                        <defs>
+                            <linearGradient id="dabeiBgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#500724"/>
+                                <stop offset="35%" stop-color="#9d174d"/>
+                                <stop offset="70%" stop-color="#db2777"/>
+                                <stop offset="100%" stop-color="#fef3c7"/>
+                            </linearGradient>
+                            <radialGradient id="dabeiHaloGlow" cx="50%" cy="22%" r="45%">
+                                <stop offset="0%" stop-color="#fef08a" stop-opacity="0.95"/>
+                                <stop offset="40%" stop-color="#f472b6" stop-opacity="0.45"/>
+                                <stop offset="100%" stop-color="#831843" stop-opacity="0"/>
+                            </radialGradient>
+                            <linearGradient id="dabeiGoldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#fde68a"/>
+                                <stop offset="50%" stop-color="#d97706"/>
+                                <stop offset="100%" stop-color="#fef3c7"/>
+                            </linearGradient>
+                        </defs>
+
+                        <rect width="600" height="820" fill="url(#dabeiBgGrad)"/>
+
+                        <!-- 千手蓮華光芒 -->
+                        <g transform="translate(300, 205)">
+                            <g opacity="0.25">
+                                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="45s" repeatCount="indefinite"/>
+                                <circle r="115" fill="none" stroke="#fef08a" stroke-width="2" stroke-dasharray="10,14"/>
+                                <line x1="-220" y1="0" x2="220" y2="0" stroke="#fef08a" stroke-width="2" stroke-dasharray="10,15"/>
+                                <line x1="0" y1="-220" x2="0" y2="220" stroke="#fef08a" stroke-width="2" stroke-dasharray="10,15"/>
+                            </g>
+                            <circle r="125" fill="url(#dabeiHaloGlow)" opacity="0.6">
+                                <animate attributeName="r" values="115;138;115" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+
+                        <!-- 遠山海潮剪影 -->
+                        <path d="M0,290 Q150,210 300,260 T600,230 L600,340 L0,340 Z" fill="#831843" opacity="0.45"/>
+                        <path d="M0,310 Q200,250 380,290 T600,270 L600,350 L0,350 Z" fill="#500724" opacity="0.65"/>
+
+                        <!-- 飄動祥雲 -->
+                        <g fill="#fef3c7" opacity="0.35">
+                            <path d="M40,140 Q60,120 90,135 Q115,115 140,135 Q165,135 160,155 L35,155 Z">
+                                <animateTransform attributeName="transform" type="translate" values="-15,0; 25,0; -15,0" dur="12s" repeatCount="indefinite"/>
+                            </path>
+                            <path d="M420,195 Q445,175 475,190 Q500,170 525,190 Q550,190 545,210 L415,210 Z">
+                                <animateTransform attributeName="transform" type="translate" values="20,0; -20,0; 20,0" dur="14s" repeatCount="indefinite"/>
+                            </path>
+                        </g>
+
+                        <!-- 雙線金框 -->
+                        <rect x="18" y="18" width="564" height="784" rx="16" fill="none" stroke="url(#dabeiGoldBorder)" stroke-width="3"/>
+                        <rect x="26" y="26" width="548" height="768" rx="12" fill="none" stroke="url(#dabeiGoldBorder)" stroke-width="1" stroke-dasharray="6,4"/>
+
+                        <!-- 頂部宮廟抬頭與問候語 -->
+                        <text id="svg-top-temple-tag" x="300" y="68" text-anchor="middle" fill="#fef3c7" font-family="'Noto Serif TC', serif" font-size="19" font-weight="700" letter-spacing="3">臺中明德宮天聖堂 · 大悲觀世音</text>
+                        <text id="svg-greeting-title" x="300" y="122" text-anchor="middle" fill="#ffffff" font-family="'Noto Serif TC', serif" font-size="36" font-weight="900" letter-spacing="5">早安 · 慈悲吉祥</text>
+                        <text id="svg-date-badge" x="300" y="156" text-anchor="middle" fill="#fef08a" font-family="'Noto Sans TC', sans-serif" font-size="16" font-weight="700" letter-spacing="2">千手千眼大悲咒 · 每日甘露指引籤</text>
+
+                        <!-- 中央宣紙籤卡區 -->
+                        <rect x="42" y="285" width="516" height="455" rx="14" fill="#fffbeb" fill-opacity="0.96" stroke="#d97706" stroke-width="2"/>
+                        <rect x="195" y="268" width="210" height="34" rx="17" fill="#831843" stroke="#fde68a" stroke-width="1.5"/>
+                        <text id="svg-lot-number" x="300" y="290" text-anchor="middle" fill="#fef3c7" font-family="'Noto Serif TC', serif" font-size="16" font-weight="700" letter-spacing="2">第 01 籤 · 千手護持</text>
+
+                        <text x="300" y="335" text-anchor="middle" fill="#9d174d" font-family="'Noto Sans TC', sans-serif" font-size="14" font-weight="700" letter-spacing="2">【 大悲發願文 · 聖訓原文 】</text>
+                        <text id="svg-scripture-quote" x="300" y="370" text-anchor="middle" fill="#831843" font-family="'Noto Serif TC', serif" font-size="22" font-weight="900" letter-spacing="1">「千臂莊嚴普護持，千眼光明遍觀照。」</text>
+                        <line x1="80" y1="392" x2="520" y2="392" stroke="#fcd34d" stroke-width="1.5"/>
+
+                        <text x="300" y="425" text-anchor="middle" fill="#b45309" font-family="'Noto Sans TC', sans-serif" font-size="14" font-weight="700" letter-spacing="2">【 觀音菩薩現代白話提點 】</text>
+                        <text id="svg-modern-quote" x="300" y="460" text-anchor="middle" fill="#1c1917" font-family="'Noto Serif TC', serif" font-size="21" font-weight="700"></text>
+
+                        <rect x="66" y="575" width="468" height="142" rx="10" fill="#fdf2f8" stroke="#db2777" stroke-width="1"/>
+                        <text x="300" y="603" text-anchor="middle" fill="#9d174d" font-family="'Noto Sans TC', sans-serif" font-size="15" font-weight="700" letter-spacing="1">🔥 今日慈悲行動指引</text>
+                        <text id="svg-action-guide" x="300" y="633" text-anchor="middle" fill="#44403c" font-family="'Noto Sans TC', sans-serif" font-size="16" font-weight="500"></text>
+
+                        <text x="300" y="772" text-anchor="middle" fill="#78350f" font-family="'Noto Sans TC', sans-serif" font-size="14" font-weight="700" letter-spacing="1">願 大悲觀世音菩薩 甘露遍灑 · 護佑您今日平安順遂</text>
+                    </svg>
+                </div>
+
+                <!-- 籤卡下方操作按鈕列 -->
+                <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <button onclick="shareMorningCardImage()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl shadow transition flex items-center space-x-2 text-sm">
+                        <span>📤</span>
+                        <span id="share-card-btn-text">直接分享早安籤卡</span>
+                    </button>
+                    <button onclick="downloadMorningCardPng()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-5 py-2.5 rounded-xl shadow transition flex items-center space-x-2 text-sm">
+                        <span>📥</span>
+                        <span id="download-btn-text">下載早安籤卡圖檔</span>
+                    </button>
+                    <button onclick="copyOracleText()" class="bg-stone-800 hover:bg-stone-700 text-amber-100 font-medium px-5 py-2.5 rounded-xl shadow transition flex items-center space-x-2 text-sm">
+                        <span>📋</span>
+                        <span id="copy-text-btn-label">複製早安祝福文字</span>
+                    </button>
+                    <button onclick="drawDabeiLot()" class="bg-white hover:bg-pink-50 text-pink-950 border border-pink-900/30 font-medium px-4 py-2.5 rounded-xl transition text-sm">🔄 再求一籤</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 經文主體區 -->
+        <div id="scripture-content" class="bg-white rounded-2xl shadow-lg border border-pink-200/70 p-6 md:p-14 space-y-12">
+
+            <!-- 1. 告文式 -->
+            <section class="avoid-break space-y-6">
+                <div class="border-b-2 border-pink-900 pb-3 text-center">
+                    <h3 class="serif-font text-2xl md:text-3xl font-bold text-pink-950">誦咒稟告文式</h3>
+                </div>
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-4 text-center">
+                    <p class="font-bold text-pink-950 text-2xl md:text-3xl py-2"><ruby>恭<rt>ㄍㄨㄥ</rt></ruby><ruby>維<rt>ㄨㄟˊ</rt></ruby></p>
+                    <p><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>慈<rt>ㄘˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby>。<ruby>千<rt>ㄑㄧㄢ</rt></ruby><ruby>手<rt>ㄕㄡˇ</rt></ruby><ruby>護<rt>ㄏㄨˋ</rt></ruby><ruby>持<rt>ㄔˊ</rt></ruby>。<ruby>千<rt>ㄑㄧㄢ</rt></ruby><ruby>眼<rt>ㄧㄢˇ</rt></ruby><ruby>照<rt>ㄓㄠˋ</rt></ruby><ruby>見<rt>ㄐㄧㄢˋ</rt></ruby>。</p>
+                    <p><ruby>尋<rt>ㄒㄩㄣˊ</rt></ruby><ruby>聲<rt>ㄕㄥ</rt></ruby><ruby>救<rt>ㄐㄧㄡˋ</rt></ruby><ruby>苦<rt>ㄎㄨˇ</rt></ruby><ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>群<rt>ㄑㄩㄣˊ</rt></ruby><ruby>迷<rt>ㄇㄧˊ</rt></ruby>。<ruby>甘<rt>ㄍㄢ</rt></ruby><ruby>露<rt>ㄌㄨˋ</rt></ruby><ruby>法<rt>ㄈㄚˇ</rt></ruby><ruby>雨<rt>ㄩˇ</rt></ruby><ruby>灑<rt>ㄙㄚˇ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>千<rt>ㄑㄧㄢ</rt></ruby>。</p>
+
+                    <div class="pt-4 text-center leading-relaxed">
+                        <p class="inline-block" data-tts-pause="2500"><ruby>弟<rt>ㄉㄧˋ</rt></ruby><ruby>子<rt>ㄗˇ</rt></ruby><span class="text-stone-400 font-bold mx-1 tts-ignore">〇〇(請默念姓名)</span></p>
+                        <p class="inline-block" data-tts-pause="2500">，<ruby>於<rt>ㄩˊ</rt></ruby><span id="lunar-date-text" class="text-pink-800 font-bold mx-1">〇年〇月〇日</span>，<ruby>敬<rt>ㄐㄧㄥˋ</rt></ruby><ruby>為<rt>ㄨㄟˋ</rt></ruby><span class="text-stone-400 font-bold mx-1 tts-ignore">某事(請默念祈求)</span>，</p>
+                    </div>
+
+                    <p><ruby>虔<rt>ㄑㄧㄢˊ</rt></ruby><ruby>誠<rt>ㄔㄥˊ</rt></ruby><ruby>焚<rt>ㄈㄣˊ</rt></ruby><ruby>香<rt>ㄒㄧㄤ</rt></ruby><ruby>持<rt>ㄔˊ</rt></ruby><ruby>誦<rt>ㄙㄨㄥˋ</rt></ruby>《<ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>心<rt>ㄒㄧㄣ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>羅<rt>ㄌㄨㄛˊ</rt></ruby><ruby>尼<rt>ㄋㄧˊ</rt></ruby>》，</p>
+                    <p><ruby>仰<rt>ㄧㄤˇ</rt></ruby><ruby>祈<rt>ㄑㄧˊ</rt></ruby><ruby>慈<rt>ㄘˊ</rt></ruby><ruby>光<rt>ㄍㄨㄤ</rt></ruby><ruby>加<rt>ㄐㄧㄚ</rt></ruby><ruby>被<rt>ㄅㄟˋ</rt></ruby>，<ruby>業<rt>ㄧㄝˋ</rt></ruby><ruby>障<rt>ㄓㄤˋ</rt></ruby><ruby>消<rt>ㄒㄧㄠ</rt></ruby><ruby>除<rt>ㄔㄨˊ</rt></ruby>，<ruby>合<rt>ㄏㄜˊ</rt></ruby><ruby>家<rt>ㄐㄧㄚ</rt></ruby><ruby>安<rt>ㄢ</rt></ruby><ruby>康<rt>ㄎㄤ</rt></ruby>，<ruby>所<rt>ㄙㄨㄛˇ</rt></ruby><ruby>求<rt>ㄑㄧㄡˊ</rt></ruby><ruby>如<rt>ㄖㄨˊ</rt></ruby><ruby>意<rt>ㄧˋ</rt></ruby>。</p>
+                </div>
+            </section>
+
+            <!-- 2. 淨業真言集與爐香讚 -->
+            <section class="avoid-break space-y-6 pt-6 border-t border-stone-200">
+                <div class="border-b-2 border-pink-900 pb-3 text-center">
+                    <h3 class="serif-font text-2xl md:text-3xl font-bold text-pink-950">淨業真言與爐香讚</h3>
+                </div>
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-5">
+                    <div class="bg-pink-50/70 p-5 rounded-xl border border-pink-200 space-y-2 text-center">
+                        <h4 class="font-bold text-pink-900">【 淨口業真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
+                        <div data-repeat="3">
+                            <p><ruby>唵<rt>ㄢˇ</rt></ruby>。<ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。<ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。<ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-pink-50/70 p-5 rounded-xl border border-pink-200 space-y-2 text-center">
+                        <h4 class="font-bold text-pink-900">【 淨意業真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
+                        <div data-repeat="3">
+                            <p><ruby>唵<rt>ㄢˇ</rt></ruby>。<ruby>嚩<rt>ㄨㄚˊ</rt></ruby><ruby>日<rt>ㄖˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>賀<rt>ㄏㄜˋ</rt></ruby><ruby>斛<rt>ㄏㄨˊ</rt></ruby>。</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-pink-50/70 p-5 rounded-xl border border-pink-200 space-y-2 text-center">
+                        <h4 class="font-bold text-pink-900">【 淨身業真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
+                        <div data-repeat="3">
+                            <p><ruby>唵<rt>ㄢˇ</rt></ruby>。<ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。<ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。<ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-pink-50/70 p-5 rounded-xl border border-pink-200 space-y-2 text-center">
+                        <h4 class="font-bold text-pink-900">【 安土地真言 】<span class="text-sm text-stone-500 ml-1">三遍</span></h4>
+                        <div data-repeat="3">
+                            <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>三<rt>ㄙㄢ</rt></ruby><ruby>滿<rt>ㄇㄢˇ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby>。<ruby>母<rt>ㄇㄨˇ</rt></ruby><ruby>馱<rt>ㄊㄨㄛˊ</rt></ruby><ruby>喃<rt>ㄋㄢˊ</rt></ruby>。<ruby>唵<rt>ㄢˇ</rt></ruby>。<ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>嚕<rt>ㄌㄨ</rt></ruby><ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>嚕<rt>ㄌㄨ</rt></ruby>。<ruby>地<rt>ㄉㄧˋ</rt></ruby><ruby>尾<rt>ㄨㄟˇ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-amber-50/80 rounded-xl border border-amber-300 text-center space-y-3">
+                        <h4 class="font-bold text-pink-900">【 爐香讚 】</h4>
+                        <p><ruby>爐<rt>ㄌㄨˊ</rt></ruby><ruby>香<rt>ㄒㄧㄤ</rt></ruby><ruby>乍<rt>ㄓㄚˋ</rt></ruby><ruby>爇<rt>ㄖㄨㄛˋ</rt></ruby>。<ruby>法<rt>ㄈㄚˇ</rt></ruby><ruby>界<rt>ㄐㄧㄝˋ</rt></ruby><ruby>蒙<rt>ㄇㄥˊ</rt></ruby><ruby>薰<rt>ㄒㄩㄣ</rt></ruby>。<ruby>諸<rt>ㄓㄨ</rt></ruby><ruby>佛<rt>ㄈㄛˊ</rt></ruby><ruby>海<rt>ㄏㄞˇ</rt></ruby><ruby>會<rt>ㄏㄨㄟˋ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>遙<rt>ㄧㄠˊ</rt></ruby><ruby>聞<rt>ㄨㄣˊ</rt></ruby>。<ruby>隨<rt>ㄙㄨㄟˊ</rt></ruby><ruby>處<rt>ㄔㄨˋ</rt></ruby><ruby>結<rt>ㄐㄧㄝˊ</rt></ruby><ruby>祥<rt>ㄒㄧㄤˊ</rt></ruby><ruby>雲<rt>ㄩㄣˊ</rt></ruby>。<ruby>誠<rt>ㄔㄥˊ</rt></ruby><ruby>意<rt>ㄧˋ</rt></ruby><ruby>方<rt>ㄈㄤ</rt></ruby><ruby>殷<rt>ㄧㄣ</rt></ruby>。<ruby>諸<rt>ㄓㄨ</rt></ruby><ruby>佛<rt>ㄈㄛˊ</rt></ruby><ruby>現<rt>ㄒㄧㄢˋ</rt></ruby><ruby>全<rt>ㄑㄩㄢˊ</rt></ruby><ruby>身<rt>ㄕㄣ</rt></ruby>。</p>
+                        <div data-repeat="3">
+                            <p class="font-black text-pink-950 text-2xl md:text-3xl"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>香<rt>ㄒㄧㄤ</rt></ruby><ruby>雲<rt>ㄩㄣˊ</rt></ruby><ruby>蓋<rt>ㄍㄞˋ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><span class="text-base text-stone-500 font-normal">（三稱）</span></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 觀世音菩薩發願文 -->
+            <section class="avoid-break space-y-6 pt-6 border-t border-stone-200">
+                <div class="border-b-2 border-pink-900 pb-3 text-center">
+                    <h3 class="serif-font text-2xl md:text-3xl font-bold text-pink-950">觀世音菩薩發願文</h3>
+                </div>
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-3 text-center">
+                    <p><ruby>稽<rt>ㄑㄧˇ</rt></ruby><ruby>首<rt>ㄕㄡˇ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>主<rt>ㄓㄨˇ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>力<rt>ㄌㄧˋ</rt></ruby><ruby>洪<rt>ㄏㄨㄥˊ</rt></ruby><ruby>深<rt>ㄕㄣ</rt></ruby><ruby>相<rt>ㄒㄧㄤˋ</rt></ruby><ruby>好<rt>ㄏㄠˇ</rt></ruby><ruby>身<rt>ㄕㄣ</rt></ruby>。</p>
+                    <p><ruby>千<rt>ㄑㄧㄢ</rt></ruby><ruby>臂<rt>ㄅㄧˋ</rt></ruby><ruby>莊<rt>ㄓㄨㄤ</rt></ruby><ruby>嚴<rt>ㄧㄢˊ</rt></ruby><ruby>普<rt>ㄆㄨˇ</rt></ruby><ruby>護<rt>ㄏㄨˋ</rt></ruby><ruby>持<rt>ㄔˊ</rt></ruby>。<ruby>千<rt>ㄑㄧㄢ</rt></ruby><ruby>眼<rt>ㄧㄢˇ</rt></ruby><ruby>光<rt>ㄍㄨㄤ</rt></ruby><ruby>明<rt>ㄇㄧㄥˊ</rt></ruby><ruby>遍<rt>ㄅㄧㄢˋ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>照<rt>ㄓㄠˋ</rt></ruby>。</p>
+                    <p><ruby>真<rt>ㄓㄣ</rt></ruby><ruby>實<rt>ㄕˊ</rt></ruby><ruby>語<rt>ㄩˇ</rt></ruby><ruby>中<rt>ㄓㄨㄥ</rt></ruby><ruby>宣<rt>ㄒㄩㄢ</rt></ruby><ruby>密<rt>ㄇㄧˋ</rt></ruby><ruby>語<rt>ㄩˇ</rt></ruby>。<ruby>無<rt>ㄨˊ</rt></ruby><ruby>為<rt>ㄨㄟˊ</rt></ruby><ruby>心<rt>ㄒㄧㄣ</rt></ruby><ruby>內<rt>ㄋㄟˋ</rt></ruby><ruby>起<rt>ㄑㄧˇ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>心<rt>ㄒㄧㄣ</rt></ruby>。</p>
+                    <p><ruby>速<rt>ㄙㄨˋ</rt></ruby><ruby>令<rt>ㄌㄧㄥˋ</rt></ruby><ruby>滿<rt>ㄇㄢˇ</rt></ruby><ruby>足<rt>ㄗㄨˊ</rt></ruby><ruby>諸<rt>ㄓㄨ</rt></ruby><ruby>希<rt>ㄒㄧ</rt></ruby><ruby>求<rt>ㄑㄧㄡˊ</rt></ruby>。<ruby>永<rt>ㄩㄥˇ</rt></ruby><ruby>使<rt>ㄕˇ</rt></ruby><ruby>滅<rt>ㄇㄧㄝˋ</rt></ruby><ruby>除<rt>ㄔㄨˊ</rt></ruby><ruby>諸<rt>ㄓㄨ</rt></ruby><ruby>罪<rt>ㄗㄨㄟˋ</rt></ruby><ruby>業<rt>ㄧㄝˋ</rt></ruby>。</p>
+                    <p><ruby>龍<rt>ㄌㄨㄥˊ</rt></ruby><ruby>天<rt>ㄊㄧㄢ</rt></ruby><ruby>聖<rt>ㄕㄥˋ</rt></ruby><ruby>眾<rt>ㄓㄨㄥˋ</rt></ruby><ruby>同<rt>ㄊㄨㄥˊ</rt></ruby><ruby>慈<rt>ㄘˊ</rt></ruby><ruby>護<rt>ㄏㄨˋ</rt></ruby>。<ruby>百<rt>ㄅㄞˇ</rt></ruby><ruby>千<rt>ㄑㄧㄢ</rt></ruby><ruby>三<rt>ㄙㄢ</rt></ruby><ruby>昧<rt>ㄇㄟˋ</rt></ruby><ruby>頓<rt>ㄉㄨㄣˋ</rt></ruby><ruby>薰<rt>ㄒㄩㄣ</rt></ruby><ruby>修<rt>ㄒㄧㄡ</rt></ruby>。</p>
+                    <p><ruby>受<rt>ㄕㄡˋ</rt></ruby><ruby>持<rt>ㄔˊ</rt></ruby><ruby>身<rt>ㄕㄣ</rt></ruby><ruby>是<rt>ㄕˋ</rt></ruby><ruby>光<rt>ㄍㄨㄤ</rt></ruby><ruby>明<rt>ㄇㄧㄥˊ</rt></ruby><ruby>幢<rt>ㄔㄨㄤˊ</rt></ruby>。<ruby>受<rt>ㄕㄡˋ</rt></ruby><ruby>持<rt>ㄔˊ</rt></ruby><ruby>心<rt>ㄒㄧㄣ</rt></ruby><ruby>是<rt>ㄕˋ</rt></ruby><ruby>神<rt>ㄕㄣˊ</rt></ruby><ruby>通<rt>ㄊㄨㄥ</rt></ruby><ruby>藏<rt>ㄗㄤˋ</rt></ruby>。</p>
+                    <p><ruby>洗<rt>ㄒㄧˇ</rt></ruby><ruby>滌<rt>ㄉㄧˊ</rt></ruby><ruby>塵<rt>ㄔㄣˊ</rt></ruby><ruby>勞<rt>ㄌㄠˊ</rt></ruby><ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>濟<rt>ㄐㄧˋ</rt></ruby><ruby>海<rt>ㄏㄞˇ</rt></ruby>。<ruby>超<rt>ㄔㄠ</rt></ruby><ruby>證<rt>ㄓㄥˋ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby><ruby>方<rt>ㄈㄤ</rt></ruby><ruby>便<rt>ㄅㄧㄢˋ</rt></ruby><ruby>門<rt>ㄇㄣˊ</rt></ruby>。</p>
+                    <p><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>今<rt>ㄐㄧㄣ</rt></ruby><ruby>稱<rt>ㄔㄥ</rt></ruby><ruby>誦<rt>ㄙㄨㄥˋ</rt></ruby><ruby>誓<rt>ㄕˋ</rt></ruby><ruby>皈<rt>ㄍㄨㄟ</rt></ruby><ruby>依<rt>ㄧ</rt></ruby>。<ruby>所<rt>ㄙㄨㄛˇ</rt></ruby><ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>從<rt>ㄘㄨㄥˊ</rt></ruby><ruby>心<rt>ㄒㄧㄣ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>圓<rt>ㄩㄢˊ</rt></ruby><ruby>滿<rt>ㄇㄢˇ</rt></ruby>。</p>
+
+                    <div class="pt-4 space-y-2 text-pink-950 font-semibold">
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>速<rt>ㄙㄨˋ</rt></ruby><ruby>知<rt>ㄓ</rt></ruby><ruby>一<rt>ㄧˊ</rt></ruby><ruby>切<rt>ㄑㄧㄝˋ</rt></ruby><ruby>法<rt>ㄈㄚˇ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>早<rt>ㄗㄠˇ</rt></ruby><ruby>得<rt>ㄉㄜˊ</rt></ruby><ruby>智<rt>ㄓˋ</rt></ruby><ruby>慧<rt>ㄏㄨㄟˋ</rt></ruby><ruby>眼<rt>ㄧㄢˇ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>速<rt>ㄙㄨˋ</rt></ruby><ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>一<rt>ㄧˊ</rt></ruby><ruby>切<rt>ㄑㄧㄝˋ</rt></ruby><ruby>眾<rt>ㄓㄨㄥˋ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>早<rt>ㄗㄠˇ</rt></ruby><ruby>得<rt>ㄉㄜˊ</rt></ruby><ruby>善<rt>ㄕㄢˋ</rt></ruby><ruby>方<rt>ㄈㄤ</rt></ruby><ruby>便<rt>ㄅㄧㄢˋ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>速<rt>ㄙㄨˋ</rt></ruby><ruby>乘<rt>ㄔㄥˊ</rt></ruby><ruby>般<rt>ㄅㄛ</rt></ruby><ruby>若<rt>ㄖㄜˇ</rt></ruby><ruby>船<rt>ㄔㄨㄢˊ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>早<rt>ㄗㄠˇ</rt></ruby><ruby>得<rt>ㄉㄜˊ</rt></ruby><ruby>越<rt>ㄩㄝˋ</rt></ruby><ruby>苦<rt>ㄎㄨˇ</rt></ruby><ruby>海<rt>ㄏㄞˇ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>速<rt>ㄙㄨˋ</rt></ruby><ruby>得<rt>ㄉㄜˊ</rt></ruby><ruby>戒<rt>ㄐㄧㄝˋ</rt></ruby><ruby>定<rt>ㄉㄧㄥˋ</rt></ruby><ruby>道<rt>ㄉㄠˋ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>早<rt>ㄗㄠˇ</rt></ruby><ruby>登<rt>ㄉㄥ</rt></ruby><ruby>涅<rt>ㄋㄧㄝˋ</rt></ruby><ruby>槃<rt>ㄆㄢˊ</rt></ruby><ruby>山<rt>ㄕㄢ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>速<rt>ㄙㄨˋ</rt></ruby><ruby>會<rt>ㄏㄨㄟˋ</rt></ruby><ruby>無<rt>ㄨˊ</rt></ruby><ruby>為<rt>ㄨㄟˊ</rt></ruby><ruby>舍<rt>ㄕㄜˋ</rt></ruby>。</p>
+                        <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby>。<ruby>願<rt>ㄩㄢˋ</rt></ruby><ruby>我<rt>ㄨㄛˇ</rt></ruby><ruby>早<rt>ㄗㄠˇ</rt></ruby><ruby>同<rt>ㄊㄨㄥˊ</rt></ruby><ruby>法<rt>ㄈㄚˇ</rt></ruby><ruby>性<rt>ㄒㄧㄥˋ</rt></ruby><ruby>身<rt>ㄕㄣ</rt></ruby>。</p>
+                    </div>
+
+                    <div class="pt-4 space-y-2" data-repeat="3">
+                        <p class="font-black text-2xl md:text-3xl text-pink-950"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><span class="text-base text-stone-500 font-normal">（三稱）</span></p>
+                    </div>
+                    <div class="space-y-2" data-repeat="3">
+                        <p class="font-black text-2xl md:text-3xl text-pink-950"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>彌<rt>ㄇㄧˊ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>佛<rt>ㄈㄛˊ</rt></ruby><span class="text-base text-stone-500 font-normal">（三稱）</span></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. 千手千眼觀世音菩薩廣大圓滿無礙大悲心陀羅尼（大悲咒全文 84 句） -->
+            <section class="space-y-8 pt-6 border-t border-stone-200">
+                <div class="border-b-2 border-pink-900 pb-4 text-center">
+                    <p class="text-sm md:text-base text-stone-500 mb-1">第二遍起 (循環敬誦)</p>
+                    <h3 class="serif-font text-2xl md:text-4xl font-black text-pink-950" data-loop-start="true">千手千眼觀世音菩薩廣大圓滿無礙大悲心陀羅尼</h3>
+                </div>
+
+                <div class="serif-font text-xl md:text-2xl leading-relaxed text-stone-800 space-y-4 text-center">
+                    <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>喝<rt>ㄏㄜ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>羯<rt>ㄐㄧㄝˊ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby><ruby>爍<rt>ㄕㄨㄛˋ</rt></ruby><ruby>鉢<rt>ㄅㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>埵<rt>ㄉㄨㄛˇ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>埵<rt>ㄉㄨㄛˇ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>迦<rt>ㄐㄧㄚ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>尼<rt>ㄋㄧˊ</rt></ruby><ruby>迦<rt>ㄐㄧㄚ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>唵<rt>ㄢˇ</rt></ruby>。<ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>皤<rt>ㄆㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>曳<rt>ㄧˋ</rt></ruby>。<ruby>數<rt>ㄕㄨˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>寫<rt>ㄒㄧㄝˇ</rt></ruby>。</p>
+                    <p><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>吉<rt>ㄐㄧˊ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>埵<rt>ㄉㄨㄛˇ</rt></ruby><ruby>伊<rt>ㄧ</rt></ruby><ruby>蒙<rt>ㄇㄥˊ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>吉<rt>ㄐㄧˊ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby><ruby>室<rt>ㄕˋ</rt></ruby><ruby>佛<rt>ㄈㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>愣<rt>ㄌㄥˊ</rt></ruby><ruby>馱<rt>ㄊㄨㄛˊ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby>。</p>
+
+                    <p class="pt-3"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>謹<rt>ㄐㄧㄣˇ</rt></ruby><ruby>墀<rt>ㄔˊ</rt></ruby>。<ruby>醯<rt>ㄒㄧ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>皤<rt>ㄆㄛˊ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>沙<rt>ㄕㄚ</rt></ruby><ruby>咩<rt>ㄇㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>他<rt>ㄊㄚ</rt></ruby><ruby>豆<rt>ㄉㄡˋ</rt></ruby><ruby>輸<rt>ㄕㄨ</rt></ruby><ruby>朋<rt>ㄆㄥˊ</rt></ruby>。<ruby>阿<rt>ㄚ</rt></ruby><ruby>逝<rt>ㄕˋ</rt></ruby><ruby>孕<rt>ㄩㄣˋ</rt></ruby>。</p>
+                    <p><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>多<rt>ㄉㄨㄛ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>伽<rt>ㄑㄧㄝˊ</rt></ruby>。</p>
+                    <p><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>特<rt>ㄊㄜˋ</rt></ruby><ruby>豆<rt>ㄉㄡˋ</rt></ruby>。<ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>姪<rt>ㄓˊ</rt></ruby><ruby>他<rt>ㄊㄚ</rt></ruby>。</p>
+                    <p><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby>。<ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>迦<rt>ㄐㄧㄚ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby>。<ruby>迦<rt>ㄐㄧㄚ</rt></ruby><ruby>羅<rt>ㄌㄨㄛˊ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby>。<ruby>夷<rt>ㄧˊ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。</p>
+                    <p><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>埵<rt>ㄉㄨㄛˇ</rt></ruby>。<ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby>。</p>
+
+                    <p class="pt-3"><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>馱<rt>ㄊㄨㄛˊ</rt></ruby><ruby>孕<rt>ㄩㄣˋ</rt></ruby>。</p>
+                    <p><ruby>俱<rt>ㄐㄩˋ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>俱<rt>ㄐㄩˋ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>羯<rt>ㄐㄧㄝˊ</rt></ruby><ruby>蒙<rt>ㄇㄥˊ</rt></ruby>。<ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>度<rt>ㄉㄨˋ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>闍<rt>ㄕㄜˊ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby>。</p>
+                    <p><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>闍<rt>ㄕㄜˊ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby>。<ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。</p>
+                    <p><ruby>地<rt>ㄉㄧˋ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>尼<rt>ㄋㄧˊ</rt></ruby>。<ruby>室<rt>ㄕˋ</rt></ruby><ruby>佛<rt>ㄈㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>遮<rt>ㄓㄜ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>遮<rt>ㄓㄜ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。</p>
+                    <p><ruby>麼<rt>ㄇㄛˊ</rt></ruby><ruby>麼<rt>ㄇㄛˊ</rt></ruby><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。<ruby>穆<rt>ㄇㄨˋ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby><ruby>隸<rt>ㄌㄧˋ</rt></ruby>。<ruby>伊<rt>ㄧ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby><ruby>伊<rt>ㄧ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby>。</p>
+                    <p><ruby>室<rt>ㄕˋ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>室<rt>ㄕˋ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby>。<ruby>阿<rt>ㄚ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>嘇<rt>ㄕㄣ</rt></ruby><ruby>佛<rt>ㄈㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>舍<rt>ㄕㄜˋ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby>。</p>
+
+                    <p class="pt-3"><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>沙<rt>ㄕㄚ</rt></ruby><ruby>罰<rt>ㄈㄚˊ</rt></ruby><ruby>參<rt>ㄕㄣ</rt></ruby>。<ruby>佛<rt>ㄈㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>舍<rt>ㄕㄜˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>呼<rt>ㄏㄨ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>呼<rt>ㄏㄨ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。<ruby>呼<rt>ㄏㄨ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>呼<rt>ㄏㄨ</rt></ruby><ruby>盧<rt>ㄌㄨˊ</rt></ruby><ruby>醯<rt>ㄒㄧ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby>。</p>
+                    <p><ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。<ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>唎<rt>ㄌㄧˋ</rt></ruby>。<ruby>蘇<rt>ㄙㄨ</rt></ruby><ruby>嚧<rt>ㄌㄨˊ</rt></ruby><ruby>蘇<rt>ㄙㄨ</rt></ruby><ruby>嚧<rt>ㄌㄨˊ</rt></ruby>。</p>
+                    <p><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>提<rt>ㄊㄧˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>馱<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>馱<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。</p>
+                    <p><ruby>彌<rt>ㄇㄧˊ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>謹<rt>ㄐㄧㄣˇ</rt></ruby><ruby>墀<rt>ㄔˊ</rt></ruby>。</p>
+                    <p><ruby>地<rt>ㄉㄧˋ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>瑟<rt>ㄙㄜˋ</rt></ruby><ruby>尼<rt>ㄋㄧˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby>。<ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+
+                    <p class="pt-3"><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>喻<rt>ㄩˋ</rt></ruby><ruby>藝<rt>ㄧˋ</rt></ruby>。<ruby>室<rt>ㄕˋ</rt></ruby><ruby>皤<rt>ㄆㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>謹<rt>ㄐㄧㄣˇ</rt></ruby><ruby>墀<rt>ㄔˊ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。<ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>僧<rt>ㄙㄥ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>穆<rt>ㄇㄨˋ</rt></ruby><ruby>佉<rt>ㄑㄧㄝˊ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>者<rt>ㄓㄜˇ</rt></ruby><ruby>吉<rt>ㄐㄧˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>波<rt>ㄅㄛ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>羯<rt>ㄐㄧㄝˊ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>謹<rt>ㄐㄧㄣˇ</rt></ruby><ruby>墀<rt>ㄔˊ</rt></ruby><ruby>皤<rt>ㄆㄛˊ</rt></ruby><ruby>伽<rt>ㄑㄧㄝˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p><ruby>摩<rt>ㄇㄛˊ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>勝<rt>ㄕㄥˋ</rt></ruby><ruby>羯<rt>ㄐㄧㄝˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+
+                    <p class="pt-3"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>喝<rt>ㄏㄜ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>怛<rt>ㄉㄚˊ</rt></ruby><ruby>那<rt>ㄋㄚˋ</rt></ruby><ruby>哆<rt>ㄉㄨㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>阿<rt>ㄚ</rt></ruby><ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。</p>
+                    <p><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>嚧<rt>ㄌㄨˊ</rt></ruby><ruby>吉<rt>ㄐㄧˊ</rt></ruby><ruby>帝<rt>ㄉㄧˋ</rt></ruby>。<ruby>爍<rt>ㄕㄨㄛˋ</rt></ruby><ruby>皤<rt>ㄆㄛˊ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby><ruby>夜<rt>ㄧㄝˋ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                    <p class="font-bold text-pink-950 text-2xl md:text-3xl pt-2"><ruby>唵<rt>ㄢˇ</rt></ruby><ruby>悉<rt>ㄒㄧ</rt></ruby><ruby>殿<rt>ㄉㄧㄢˋ</rt></ruby><ruby>都<rt>ㄉㄨ</rt></ruby>。<ruby>漫<rt>ㄇㄢˋ</rt></ruby><ruby>多<rt>ㄉㄨㄛ</rt></ruby><ruby>囉<rt>ㄌㄚˋ</rt></ruby>。<ruby>跋<rt>ㄅㄚˊ</rt></ruby><ruby>陀<rt>ㄊㄨㄛˊ</rt></ruby><ruby>耶<rt>ㄧㄝ</rt></ruby>。<ruby>娑<rt>ㄙㄨㄛ</rt></ruby><ruby>婆<rt>ㄆㄛˊ</rt></ruby><ruby>訶<rt>ㄏㄜ</rt></ruby>。</p>
+                </div>
+
+                <!-- 完咒讚與回向 -->
+                <div class="p-8 bg-pink-950 text-amber-50 rounded-xl text-center avoid-break serif-font space-y-5">
+                    <h4 class="font-bold text-2xl md:text-3xl text-amber-300">大悲咒完咒讚</h4>
+                    <p class="text-xl md:text-2xl leading-relaxed"><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>神<rt>ㄕㄣˊ</rt></ruby><ruby>咒<rt>ㄓㄡˋ</rt></ruby>。<ruby>利<rt>ㄌㄧˋ</rt></ruby><ruby>益<rt>ㄧˋ</rt></ruby><ruby>無<rt>ㄨˊ</rt></ruby><ruby>邊<rt>ㄅㄧㄢ</rt></ruby>。<ruby>甘<rt>ㄍㄢ</rt></ruby><ruby>露<rt>ㄌㄨˋ</rt></ruby><ruby>遍<rt>ㄅㄧㄢˋ</rt></ruby><ruby>灑<rt>ㄙㄚˇ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>千<rt>ㄑㄧㄢ</rt></ruby><ruby>天<rt>ㄊㄧㄢ</rt></ruby>。<ruby>消<rt>ㄒㄧㄠ</rt></ruby><ruby>災<rt>ㄗㄞ</rt></ruby><ruby>延<rt>ㄧㄢˊ</rt></ruby><ruby>福<rt>ㄈㄨˊ</rt></ruby><ruby>壽<rt>ㄕㄡˋ</rt></ruby>。<ruby>家<rt>ㄐㄧㄚ</rt></ruby><ruby>門<rt>ㄇㄣˊ</rt></ruby><ruby>永<rt>ㄩㄥˇ</rt></ruby><ruby>安<rt>ㄢ</rt></ruby><ruby>然<rt>ㄖㄢˊ</rt></ruby>。</p>
+                    <div data-repeat="3">
+                        <p class="font-black text-2xl md:text-3xl text-amber-300 pt-2"><ruby>南<rt>ㄋㄚˊ</rt></ruby><ruby>無<rt>ㄇㄛˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>慈<rt>ㄘˊ</rt></ruby><ruby>大<rt>ㄉㄚˋ</rt></ruby><ruby>悲<rt>ㄅㄟ</rt></ruby><ruby>觀<rt>ㄍㄨㄢ</rt></ruby><ruby>世<rt>ㄕˋ</rt></ruby><ruby>音<rt>ㄧㄣ</rt></ruby><ruby>菩<rt>ㄆㄨˊ</rt></ruby><ruby>薩<rt>ㄙㄚˋ</rt></ruby><span class="text-lg text-amber-400 font-normal">（三稱）</span></p>
+                    </div>
+                    <div class="border-t border-pink-800 pt-5 space-y-3 text-base md:text-xl">
+                        <p class="font-bold text-amber-200">回向偈</p>
+                        <p>願以此功德，普及於一切。我等與眾生，皆共成佛道。</p>
+                        <p>祈願十方友宮香火鼎盛，道誼長存，四海清平，闔家安康。</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="no-print bg-stone-900 text-stone-400 py-6 px-4 text-center text-sm border-t border-stone-800 space-y-2 pb-24 md:pb-6">
+        <p class="text-stone-300 font-medium">臺中市明德宮天聖堂（鸞堂）· 敬贈友宮數位共修結緣版</p>
+        <p class="text-xs text-stone-400">秉持聖門代天宣化、勸善渡世之精神，由臺中明德宮天聖堂 鸞生黃國豐 發心製作敬獻，誠摯致贈各友宮堂社與十方善信免費流通、共修持誦。</p>
+        <p class="pt-1"><a href="https://taichungmingdetemple.github.io/fortune/" target="_blank" rel="noopener noreferrer" class="inline-block text-amber-400 hover:text-amber-300 underline underline-offset-4 text-xs transition">🏮 認識臺中明德宮（三曹對案直轄鸞堂）與 AI 科技化宮廟介紹 ➔</a></p>
+    </footer>
+
+    <!-- 友宮分享結緣互動彈窗 -->
+    <div id="share-modal" class="no-print hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeShareModal()">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-pink-400 space-y-4 relative">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100">✕</button>
+            <div class="text-center space-y-1">
+                <span class="inline-block bg-pink-100 text-pink-950 text-xs font-bold px-3 py-1 rounded-full">弘揚聖教 · 廣結善緣</span>
+                <h3 class="serif-font text-2xl font-black text-pink-950 pt-1">致贈《大悲神咒》結緣本</h3>
+                <p class="text-xs text-stone-500">臺中明德宮天聖堂（三曹對案直轄鸞堂）謹製敬獻</p>
+            </div>
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-3 space-y-1.5">
+                <label for="friend-temple-input" class="block text-xs font-bold text-pink-950">🏮 輸入受贈友宮名稱（選填，留白則為通用版）：</label>
+                <input type="text" id="friend-temple-input" oninput="updateCustomShareMessage()" placeholder="例如：艋舺龍山寺、紫雲巖、友宮宮名..." class="w-full bg-white border border-pink-300 rounded-lg px-3 py-1.5 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-pink-700">
+            </div>
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-sm text-stone-700 space-y-1.5">
+                <p class="font-bold text-amber-950 text-xs">📋 結緣分享敬語預覽：</p>
+                <textarea id="share-message-box" rows="4" readonly class="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-stone-700 leading-relaxed focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="copyShareText()" class="bg-pink-900 hover:bg-pink-800 text-amber-50 font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>📋</span><span id="copy-share-text">複製結緣連結</span>
+                </button>
+                <a id="line-share-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-[#06C755] hover:bg-[#05b34c] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>💬</span><span>傳送至 LINE</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 固定正式路徑與友宮 URL 參數 (?to=友宮名稱) ---
+        const CANONICAL_SCRIPTURE_URL = 'https://taichungmingdetemple.github.io/mingde/mingde_dabei.html';
+        let targetFriendTemple = '';
+
+        (function initDiplomaticParams() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const toParam = (params.get('to') || '').trim();
+                if (toParam) {
+                    targetFriendTemple = toParam;
+                    const banner = document.getElementById('top-diplomatic-banner');
+                    const giftCard = document.getElementById('diplomatic-gift-card');
+                    const giftHeading = document.getElementById('diplomatic-temple-heading');
+                    const svgTopTag = document.getElementById('svg-top-temple-tag');
+                    if (banner) banner.innerHTML = `🪷 臺中明德宮天聖堂 敬賀 <span class="text-white underline decoration-amber-300 underline-offset-4">【${toParam}】</span> 慈光普照 · 恭獻《大悲神咒》共修結緣 🏮`;
+                    if (giftCard) giftCard.classList.remove('hidden');
+                    if (giftHeading) giftHeading.textContent = `敬賀【${toParam}】慈光普照 · 香火鼎盛`;
+                    if (svgTopTag) {
+                        svgTopTag.textContent = `臺中明德宮天聖堂 敬賀【${toParam}】`;
+                        if (toParam.length > 8) svgTopTag.setAttribute('font-size', '16');
+                    }
+                }
+            } catch (e) {}
+        })();
+
+        // --- 智慧財產權保護 ---
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault();
+        });
+
+        // --- 單檔獨立內建 PWA 核心 ---
+        (function initStandalonePWA() {
+            try {
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#831843"/><rect x="24" y="24" width="464" height="464" rx="76" fill="none" stroke="#f59e0b" stroke-width="12"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-weight="bold" font-size="250" fill="#fde68a">悲</text></svg>`;
+                const iconDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+                const appleIconLink = document.getElementById('apple-touch-icon-link');
+                if (appleIconLink) appleIconLink.href = iconDataUri;
+                const manifestObj = {
+                    name: "千手千眼觀世音菩薩大悲咒｜臺中明德宮天聖堂結緣版",
+                    short_name: "大悲神咒",
+                    start_url: CANONICAL_SCRIPTURE_URL,
+                    scope: "./",
+                    display: "standalone",
+                    background_color: "#fcfaf9",
+                    theme_color: "#831843",
+                    icons: [{ src: iconDataUri, sizes: "192x192 512x512", type: "image/svg+xml", purpose: "any maskable" }]
+                };
+                const manifestLink = document.getElementById('inline-manifest');
+                if (manifestLink) manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
+            } catch (err) {}
+        })();
+
+        // --- 分享結緣功能 ---
+        function getSharePayload() {
+            const inputVal = (document.getElementById('friend-temple-input')?.value || targetFriendTemple || '').trim();
+            const shareUrl = inputVal ? `${CANONICAL_SCRIPTURE_URL}?to=${encodeURIComponent(inputVal)}` : CANONICAL_SCRIPTURE_URL;
+            const templeGreeting = inputVal ? `敬賀【${inputVal}】慈光普照、香火鼎盛！\n` : '';
+            const shareTitle = inputVal
+                ? `臺中明德宮天聖堂 敬賀【${inputVal}】《大悲神咒》結緣本`
+                : '《千手千眼觀世音菩薩大悲咒》｜臺中明德宮天聖堂 · 友宮共修結緣版';
+            const shareMessageOnly = `${templeGreeting}臺中明德宮天聖堂（三曹對案直轄鸞堂）謹製《千手千眼觀世音菩薩大悲咒》數位共修結緣本，附全字注音、循環語音帶讀與觀音甘露靈感籤，敬獻貴宮與十方善信共修結緣：`;
+            const fullShareText = `${shareMessageOnly}\n${shareUrl}`;
+            return { shareUrl, shareTitle, shareMessageOnly, fullShareText };
+        }
+
+        function updateCustomShareMessage() {
+            const { fullShareText } = getSharePayload();
+            const msgBox = document.getElementById('share-message-box');
+            const lineLink = document.getElementById('line-share-link');
+            if (msgBox) msgBox.value = fullShareText;
+            if (lineLink) lineLink.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(fullShareText);
+        }
+
+        function shareScripture() {
+            const inputEl = document.getElementById('friend-temple-input');
+            if (inputEl && !inputEl.value && targetFriendTemple) inputEl.value = targetFriendTemple;
+            updateCustomShareMessage();
+            document.getElementById('share-modal')?.classList.remove('hidden');
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal')?.classList.add('hidden');
+        }
+
+        function copyShareText() {
+            const { fullShareText } = getSharePayload();
+            const btnText = document.getElementById('copy-share-text');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(fullShareText).then(() => {
+                    if (btnText) btnText.innerText = '✅ 已複製敬語與網址';
+                    setTimeout(() => { if (btnText) btnText.innerText = '複製結緣連結'; }, 2500);
+                });
+            }
+        }
+
+        // --- 字體縮放與注音切換 ---
+        let currentFontScale = 1.0;
+        function changeFontSize(delta) {
+            currentFontScale = Math.min(1.75, Math.max(0.85, Math.round((currentFontScale + delta) * 100) / 100));
+            document.getElementById('scripture-content').style.setProperty('--font-scale', currentFontScale);
+            document.getElementById('font-size-label').innerText = Math.round(currentFontScale * 100) + '%';
+        }
+
+        let isZhuyinVisible = true;
+        function toggleZhuyin() {
+            const scriptureContent = document.getElementById('scripture-content');
+            const statusText = document.getElementById('zhuyin-status-text');
+            scriptureContent.classList.toggle('hide-zhuyin', isZhuyinVisible);
+            if (statusText) statusText.innerText = isZhuyinVisible ? '注音：已隱藏' : '注音：顯示中';
+            isZhuyinVisible = !isZhuyinVisible;
+        }
+
+        function toggleTtsSettings() {
+            const panel = document.getElementById('tts-settings-panel');
+            const container = document.getElementById('floating-control-container');
+            const bar = document.getElementById('floating-tts-bar');
+            if (!panel) return;
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden') && container && bar) {
+                if (container.getBoundingClientRect().top < window.innerHeight * 0.45) container.insertBefore(bar, panel);
+                else container.insertBefore(panel, bar);
+            }
+        }
+
+        // --- 懸浮控制台自由拖曳 ---
+        (function initDraggableFloatingControl() {
+            const container = document.getElementById('floating-control-container');
+            const dragHandle = document.getElementById('floating-tts-bar');
+            if (!container || !dragHandle) return;
+            let isDragging = false, hasMoved = false, startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+            function onDragStart(e) {
+                const point = e.touches ? e.touches[0] : e;
+                startX = point.clientX; startY = point.clientY;
+                const rect = container.getBoundingClientRect();
+                initialLeft = rect.left; initialTop = rect.top;
+                isDragging = true; hasMoved = false;
+            }
+            function onDragMove(e) {
+                if (!isDragging) return;
+                const point = e.touches ? e.touches[0] : e;
+                const dx = point.clientX - startX, dy = point.clientY - startY;
+                if (!hasMoved && Math.hypot(dx, dy) < 5) return;
+                hasMoved = true;
+                if (e.cancelable) e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const nextLeft = Math.min(Math.max(8, initialLeft + dx), Math.max(8, window.innerWidth - rect.width - 8));
+                const nextTop = Math.min(Math.max(8, initialTop + dy), Math.max(8, window.innerHeight - rect.height - 8));
+                container.style.right = 'auto'; container.style.bottom = 'auto';
+                container.style.left = nextLeft + 'px'; container.style.top = nextTop + 'px';
+            }
+            function onDragEnd() { isDragging = false; }
+            container.addEventListener('click', e => { if (hasMoved) { e.stopPropagation(); e.preventDefault(); hasMoved = false; } }, true);
+            dragHandle.addEventListener('mousedown', onDragStart);
+            window.addEventListener('mousemove', onDragMove);
+            window.addEventListener('mouseup', onDragEnd);
+            dragHandle.addEventListener('touchstart', onDragStart, { passive: true });
+            window.addEventListener('touchmove', onDragMove, { passive: false });
+            window.addEventListener('touchend', onDragEnd);
+        })();
+
+        // --- 語音朗讀引擎 ---
+        let synth = window.speechSynthesis, voices = [];
+        function populateVoices() {
+            voices = synth.getVoices();
+            const voiceSelect = document.getElementById('voice-select');
+            if (!voiceSelect || (voices.length > 0 && voiceSelect.options.length > 1)) return;
+            if (voices.length > 0) {
+                voiceSelect.innerHTML = '';
+                let zhVoices = voices.filter(v => v.lang.includes('zh'));
+                if (zhVoices.length === 0) zhVoices = voices;
+                zhVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.value = voices.indexOf(voice);
+                    if (voice.lang === 'zh-TW' || voice.lang === 'zh-HK') option.selected = true;
+                    voiceSelect.appendChild(option);
+                });
+            }
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = populateVoices;
+        populateVoices(); setTimeout(populateVoices, 500);
+        document.getElementById('rate-select').addEventListener('input', e => document.getElementById('rate-display').innerText = parseFloat(e.target.value).toFixed(2));
+
+        let isSpeaking = false, isPaused = false, originalChunks = [], currentChunkIndex = 0, activeHighlightElement = null, loopCount = 0, lastLoopTime = 0, speakCallTime = 0;
+        function clearHighlight() { if (activeHighlightElement) { activeHighlightElement.classList.remove('reading-highlight'); activeHighlightElement = null; } }
+        function updateTtsUI() {
+            const btnText = document.getElementById('tts-btn-text'), iconPlay = document.getElementById('tts-icon-play'), iconPause = document.getElementById('tts-icon-pause'), stopBtn = document.getElementById('tts-stop-btn');
+            const fStop = document.getElementById('floating-stop-btn'), fIcon = document.getElementById('floating-tts-icon'), fText = document.getElementById('floating-tts-text');
+            if (!isSpeaking) {
+                btnText.innerText = '語音朗讀'; iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden'); stopBtn.classList.add('hidden'); fStop.classList.add('hidden'); fIcon.innerText = '▶️'; fText.innerText = '語音朗讀';
+            } else if (isPaused) {
+                btnText.innerText = '繼續朗讀'; iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden'); stopBtn.classList.remove('hidden'); fStop.classList.remove('hidden'); fIcon.innerText = '▶️'; fText.innerText = '繼續朗讀';
+            } else {
+                btnText.innerText = '暫停朗讀'; iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden'); stopBtn.classList.remove('hidden'); fStop.classList.remove('hidden'); fIcon.innerText = '⏸️'; fText.innerText = '暫停朗讀';
+            }
+        }
+        function stopSpeech() { isSpeaking = false; isPaused = false; updateTtsUI(); synth.cancel(); clearHighlight(); currentChunkIndex = 0; loopCount = 0; document.getElementById('loop-counter-badge').classList.add('hidden'); }
+        function toggleSpeech() {
+            if (isSpeaking) { if (isPaused) { isPaused = false; updateTtsUI(); speakNextChunk(); } else { isPaused = true; updateTtsUI(); synth.cancel(); } return; }
+            document.getElementById('tts-settings-panel')?.classList.add('hidden');
+            const scriptureContent = document.getElementById('scripture-content');
+            function extractNodes(node) {
+                let extracted = [];
+                function walk(n) {
+                    if (n.nodeType === 1 && n.matches('.text-stone-500, rt, .text-xs, .no-print, .hide-zhuyin, .tts-ignore')) return;
+                    let repeats = n.nodeType === 1 && n.hasAttribute('data-repeat') ? (parseInt(n.getAttribute('data-repeat')) || 1) : 1;
+                    if (n.nodeType === 1 && ['H3', 'H4', 'P'].includes(n.tagName)) {
+                        let clone = n.cloneNode(true);
+                        clone.querySelectorAll('.text-stone-500, rt, .text-xs, .tts-ignore').forEach(el => el.remove());
+                        let text = clone.textContent.replace(/\s+/g, ' ').trim().replace(/（三稱）/g, '').replace(/三遍/g, '');
+                        if (text) { for (let i = 0; i < repeats; i++) extracted.push({ element: n, text: text }); }
+                        return;
+                    }
+                    if (repeats > 1 && !['H3', 'H4', 'P'].includes(n.tagName)) {
+                        let blockExtracted = [], oldExtracted = extracted; extracted = blockExtracted;
+                        for (let child of n.childNodes) if (child.nodeType === 1 || child.nodeType === 3) walk(child);
+                        extracted = oldExtracted;
+                        for (let i = 0; i < repeats; i++) extracted.push(...blockExtracted);
+                        return;
+                    }
+                    for (let child of n.childNodes) if (child.nodeType === 1 || child.nodeType === 3) walk(child);
+                }
+                walk(scriptureContent); return extracted;
+            }
+            originalChunks = extractNodes(scriptureContent);
+            if (originalChunks.length > 0) {
+                isSpeaking = true; isPaused = false; loopCount = 1;
+                document.getElementById('loop-count-text').innerText = loopCount;
+                document.getElementById('loop-counter-badge').classList.remove('hidden');
+                lastLoopTime = Date.now(); updateTtsUI(); synth.cancel();
+                setTimeout(() => { currentChunkIndex = 0; speakNextChunk(); }, 100);
+            }
+        }
+        function speakNextChunk() {
+            if (!isSpeaking || isPaused) return;
+            if (currentChunkIndex >= originalChunks.length) {
+                const loopCheckbox = document.getElementById('loop-mode-cb');
+                const targetLimit = parseInt(document.getElementById('loop-target-select')?.value || '0', 10);
+                if (loopCheckbox && loopCheckbox.checked && (targetLimit === 0 || loopCount < targetLimit)) {
+                    let loopStartIndex = originalChunks.findIndex(c => c.element.hasAttribute('data-loop-start'));
+                    if (loopStartIndex !== -1 && Date.now() - lastLoopTime > 5000) {
+                        currentChunkIndex = loopStartIndex; clearHighlight(); loopCount++;
+                        document.getElementById('loop-count-text').innerText = loopCount; lastLoopTime = Date.now();
+                        setTimeout(() => { if (isSpeaking && !isPaused) speakNextChunk(); }, 2500);
+                        return;
+                    }
+                }
+                stopSpeech(); return;
+            }
+            const chunk = originalChunks[currentChunkIndex];
+            let utterance = new SpeechSynthesisUtterance(chunk.text);
+            let idx = document.getElementById('voice-select').value;
+            if (idx !== "" && voices[idx]) utterance.voice = voices[idx]; else utterance.lang = 'zh-TW';
+            utterance.rate = parseFloat(document.getElementById('rate-select').value) || 1.2;
+            utterance.pitch = parseFloat(document.getElementById('pitch-select').value) || 1.0;
+            utterance.onstart = () => { if (isPaused) return; clearHighlight(); activeHighlightElement = chunk.element; activeHighlightElement.classList.add('reading-highlight'); activeHighlightElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+            utterance.onend = () => {
+                if (!isSpeaking || isPaused) return;
+                if (Date.now() - speakCallTime < 80) { isPaused = true; updateTtsUI(); return; }
+                let delay = parseInt(chunk.element.getAttribute('data-tts-pause') || '0', 10);
+                setTimeout(() => { if (isSpeaking && !isPaused) { currentChunkIndex++; speakNextChunk(); } }, delay);
+            };
+            utterance.onerror = e => { if (isSpeaking && !isPaused && e.error !== 'canceled' && e.error !== 'interrupted') { currentChunkIndex++; speakNextChunk(); } };
+            speakCallTime = Date.now(); synth.speak(utterance);
+        }
+
+        // --- 自動載入當日農曆日期（完整支援正月～臘月、閏月、初一～三十） ---
+        function initLunarDate() {
+            try {
+                const now = new Date();
+                const formatter = new Intl.DateTimeFormat('zh-TW-u-ca-chinese', { year: 'numeric', month: 'numeric', day: 'numeric' });
+                const parts = formatter.formatToParts(now);
+                let yearRaw = "", monthRaw = "", dayRaw = "";
+                parts.forEach(p => {
+                    if (p.type === 'year' || p.type === 'relatedYear') yearRaw = yearRaw || p.value;
+                    if (p.type === 'month') monthRaw = p.value;
+                    if (p.type === 'day') dayRaw = p.value;
+                });
+
+                const parseChineseNum = (str) => {
+                    const clean = String(str).replace(/[閏月日初]/g, '').trim();
+                    if (/^\d+$/.test(clean)) return parseInt(clean, 10);
+                    const map = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '冬': 11, '十一': 11, '臘': 12, '十二': 12 };
+                    if (map[clean] !== undefined) return map[clean];
+                    if (clean.startsWith('廿')) return 20 + (map[clean.slice(1)] || 0);
+                    if (clean.startsWith('二十')) return 20 + (map[clean.slice(2)] || 0);
+                    if (clean.startsWith('三十')) return 30;
+                    if (clean.startsWith('十')) return 10 + (map[clean.slice(1)] || 0);
+                    return NaN;
+                };
+
+                const formatLunarMonth = (mRaw) => {
+                    const isLeap = String(mRaw).includes('閏');
+                    const mNum = parseChineseNum(mRaw);
+                    const mNames = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
+                    const mText = (!isNaN(mNum) && mNames[mNum]) ? mNames[mNum] : String(mRaw).replace(/[閏月]/g, '');
+                    return `${isLeap ? '閏' : ''}${mText}月`;
+                };
+
+                const formatLunarDay = (dRaw) => {
+                    const dNum = parseChineseNum(dRaw);
+                    if (isNaN(dNum) || dNum < 1 || dNum > 30) return String(dRaw).replace(/日/g, '') + '日';
+                    const digits = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+                    if (dNum <= 10) return `初${digits[dNum]}日`;
+                    if (dNum < 20) return `十${digits[dNum - 10]}日`;
+                    if (dNum === 20) return '二十日';
+                    if (dNum < 30) return `廿${digits[dNum - 20]}日`;
+                    return '三十日';
+                };
+
+                let yNum = parseInt(String(yearRaw).replace(/\D/g, ''), 10);
+                let yearStr = "";
+                if (!isNaN(yNum) && yNum > 1900) {
+                    const stems = ["癸", "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬"];
+                    const branches = ["亥", "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌"];
+                    yearStr = stems[(yNum - 3) % 10] + branches[(yNum - 3) % 12];
+                } else {
+                    yearStr = String(yearRaw).replace(/[0-9年]/g, '') || yearRaw;
+                }
+
+                const el = document.getElementById('lunar-date-text');
+                if (el) el.innerText = `${yearStr}年${formatLunarMonth(monthRaw)}${formatLunarDay(dayRaw)}`;
+            } catch (e) {}
+        }
+
+        // --- 大悲咒靈感籤與動態 SVG 圖卡 ---
+        const DABEI_LOTS = [
+            { num: "第 01 籤 · 千手護持", scripture: "「千臂莊嚴普護持，千眼光明遍觀照。」", modern: ["觀世音菩薩千手千眼慈悲觀照，", "無論您身處何方、面對何種考驗，", "皆有光明護持、逢凶化吉。"], action: ["今天懷抱安定與信心面對每一件事，", "伸出雙手幫助身邊需要協助的人。"] },
+            { num: "第 02 籤 · 滿諸希求", scripture: "「速令滿足諸希求，永使滅除諸罪業。」", modern: ["只要心存正念與善願，", "真誠的努力必能獲得菩薩加持，", "阻礙消散、所求漸漸圓滿。"], action: ["專注完成眼前最重要的正事，", "放下無謂擔憂，好消息已在路上。"] },
+            { num: "第 03 籤 · 甘露淨心", scripture: "「洗滌塵勞願濟海，超證菩提方便門。」", modern: ["心中的煩惱與疲憊如同塵埃，", "以慈悲與寬容的甘露輕輕洗滌，", "內心即刻恢復清澈與自在。"], action: ["今天給自己五分鐘靜心深呼吸，", "原諒不完美，讓心情重新充滿陽光。"] },
+            { num: "第 04 籤 · 善願成就", scripture: "「我今稱誦誓皈依，所願從心悉圓滿。」", modern: ["信念堅定則方向清晰，", "當您的心念與慈悲、誠信相應時，", "貴人與順緣自然紛紛靠攏。"], action: ["寫下今日最想達成的一個正向目標，", "踏出穩健的第一步，祝福即刻相隨。"] },
+            { num: "第 05 籤 · 智慧光明", scripture: "「南無大悲觀世音，願我早得智慧眼。」", modern: ["看清事情的本質而非表象，", "不被一時的情緒波動所困，", "清明的智慧將為您指引最佳出路。"], action: ["遇事多聽多看、冷靜思考三秒再回應，", "從容不迫能為您化解所有難題。"] },
+            { num: "第 06 籤 · 家門安康", scripture: "「龍天聖眾同慈護，消災延壽保安然。」", modern: ["大悲神咒的祥和磁場護佑家宅，", "家人之間多一分體貼與溫暖，", "就是全家人最大的福氣與靠山。"], action: ["今天主動向家人傳達關心與感謝，", "和氣生財，幸福就在溫暖的互動中。"] }
+        ];
+
+        let currentLot = null;
+        function wrapSvgText(textEl, lines, startY, lineHeight) {
+            if (!textEl) return; textEl.innerHTML = '';
+            lines.forEach((line, idx) => {
+                const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                tspan.setAttribute('x', '300'); tspan.setAttribute('y', String(startY + idx * lineHeight));
+                tspan.textContent = line; textEl.appendChild(tspan);
+            });
+        }
+
+        function drawDabeiLot() {
+            const shakeIcon = document.getElementById('lot-shake-icon'), btnText = document.getElementById('draw-lot-btn-text');
+            if (shakeIcon) shakeIcon.classList.add('animate-bounce');
+            if (btnText) btnText.innerText = '虔誠求籤中...';
+            setTimeout(() => {
+                if (shakeIcon) shakeIcon.classList.remove('animate-bounce');
+                if (btnText) btnText.innerText = '誠心求取今日大悲靈感指引';
+                currentLot = DABEI_LOTS[Math.floor(Math.random() * DABEI_LOTS.length)];
+                document.getElementById('svg-lot-number').textContent = currentLot.num;
+                document.getElementById('svg-scripture-quote').textContent = currentLot.scripture;
+                wrapSvgText(document.getElementById('svg-modern-quote'), currentLot.modern, 460, 32);
+                wrapSvgText(document.getElementById('svg-action-guide'), currentLot.action, 636, 26);
+                const lunarText = document.getElementById('lunar-date-text')?.innerText;
+                if (lunarText && lunarText !== '〇年〇月〇日') document.getElementById('svg-date-badge').textContent = `農曆 ${lunarText} · 大悲靈感籤`;
+                updateGreetingText();
+                const res = document.getElementById('oracle-result-container');
+                res.classList.remove('hidden'); res.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 450);
+        }
+
+        function getResolvedGreeting() {
+            const val = document.getElementById('greeting-select')?.value || 'auto';
+            if (val !== 'auto') return { greeting: val, isAuto: false };
+            const h = new Date().getHours();
+            return { greeting: (h >= 5 && h < 11) ? '早安' : (h >= 11 && h < 18) ? '日安' : '晚安', isAuto: true };
+        }
+
+        function updateGreetingText() {
+            const { greeting, isAuto } = getResolvedGreeting();
+            const badge = document.getElementById('auto-greeting-badge');
+            if (badge) {
+                badge.innerText = isAuto ? `目前時段自動：${greeting}` : `已選擇：${greeting}`;
+            }
+            const subMap = {
+                '早安': '早安 · 慈悲吉祥',
+                '日安': '日安 · 諸事順遂',
+                '晚安': '晚安 · 闔家平安',
+                '恭祝聖誕千秋': '恭祝 聖誕千秋',
+                '恭賀宮慶圓滿': '恭賀 宮慶圓滿',
+                '參香道誼長存': '參香 道誼長存'
+            };
+            document.getElementById('svg-greeting-title').textContent = subMap[greeting] || greeting;
+            document.getElementById('share-card-btn-text').innerText = `直接分享${greeting}籤卡`;
+            document.getElementById('download-btn-text').innerText = `下載${greeting}籤卡圖檔`;
+            document.getElementById('copy-text-btn-label').innerText = `複製${greeting}祝福文字`;
+        }
+
+        function renderMorningCardToBlob(callback) {
+            const svgEl = document.getElementById('dabei-morning-svg');
+            if (!svgEl) return;
+            let svgStr = new XMLSerializer().serializeToString(svgEl);
+            if (!svgStr.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) svgStr = svgStr.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            const url = URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' }));
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas'); canvas.width = 1200; canvas.height = 1640;
+                canvas.getContext('2d').drawImage(img, 0, 0, 1200, 1640); URL.revokeObjectURL(url);
+                canvas.toBlob(blob => { if (blob && callback) callback(blob, canvas); }, 'image/png');
+            };
+            img.src = url;
+        }
+
+        function shareMorningCardImage() {
+            const { greeting } = getResolvedGreeting();
+            const btnText = document.getElementById('share-card-btn-text');
+            if (btnText) btnText.innerText = '正在產生圖卡...';
+            renderMorningCardToBlob(function(blob) {
+                updateGreetingText();
+                const file = new File([blob], `臺中明德宮_大悲觀世音${greeting}籤卡.png`, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    navigator.share({ files: [file], title: `臺中明德宮天聖堂｜大悲咒${greeting}指引籤卡` }).catch(() => downloadMorningCardPng());
+                } else {
+                    downloadMorningCardPng();
+                }
+            });
+        }
+
+        function downloadMorningCardPng() {
+            renderMorningCardToBlob(function(blob, canvas) {
+                const { greeting } = getResolvedGreeting();
+                const link = document.createElement('a');
+                link.download = `臺中明德宮_大悲觀世音${greeting}籤卡.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            });
+        }
+
+        function copyOracleText() {
+            if (!currentLot) return;
+            const { greeting } = getResolvedGreeting();
+            const { shareUrl } = getSharePayload();
+            const text = `【${greeting} · 大悲觀世音菩薩《大悲咒》每日靈感籤】\n臺中明德宮天聖堂（三曹對案直轄鸞堂）敬贈友宮道誼\n\n🪷 ${currentLot.num}\n📜 聖訓：${currentLot.scripture}\n💡 提點：${currentLot.modern.join('')}\n🔥 行動：${currentLot.action.join('')}\n\n線上恭誦《千手千眼觀世音菩薩大悲咒》：\n${shareUrl}`;
+            const labelEl = document.getElementById('copy-text-btn-label');
+            navigator.clipboard?.writeText(text).then(() => {
+                if (labelEl) labelEl.innerText = '✅ 已複製祝福文字';
+                setTimeout(() => updateGreetingText(), 2500);
+            });
+        }
+
+        initLunarDate();
+    </script>
+</body>
+</html>
